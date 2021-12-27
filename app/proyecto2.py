@@ -13,9 +13,16 @@ import streamlit as st
 
 
 # Sidebar option tuple
-sid_opt_tuple = ('COVID Cases', 'Covid Deaths', 'Vaccines')
+sid_opt_tuple = ('COVID Cases', 'Vaccines')
 
-# Option tuple
+#  **** OPTION TUPLES **** 
+# Covid deaths
+covid_deaths_tuple = ('Covid Deaths')
+# Covid Cases
+
+# Covid Vaccines
+
+
 opt_tuple = ('Tendencia de la infección por Covid-19 en un País.',
              'Predicción de Infertados en un País.')
 
@@ -40,6 +47,7 @@ sidebar_selectbox = st.sidebar.selectbox('Select Type...', sid_opt_tuple)
 # read csv file
 
 if upload_file is not None:
+
     data = pd.read_csv(upload_file)
 
     # st.write(data.columns)
@@ -53,21 +61,22 @@ if upload_file is not None:
         'Select fields',
         data.columns,
         [])
-    
-    st.write('You selected:', options)
 
-    ##st.subheader("Deaths by state")
+    #st.write('You selected:', options)
 
-    ##
-    date = options[0]
-    deaths = options[1]
+    # st.subheader("Deaths by state")
 
-    st.set_option('deprecation.showPyplotGlobalUse', False)
-    data[date] = pd.to_datetime(data.date, format="%m/%d/%Y")
-    data.index = data[date]
-    plt.plot(data[deaths], label="Covid deaths history")
-    st.pyplot()
-    
+    try:
+        date = options[0]
+        deaths = options[1]
+        st.set_option('deprecation.showPyplotGlobalUse', False)
+        data[date] = pd.to_datetime(data.date, format="%m/%d/%Y")
+        data.index = data[date]
+        plt.plot(data[deaths], label="Covid deaths history")
+        st.pyplot()
+    except:
+        st.warming("Select more data")
+
 else:
     st.markdown("the file is empty or invalid, please upload a valid file")
 
