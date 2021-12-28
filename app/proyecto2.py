@@ -1,5 +1,5 @@
+
 import datetime as dt
-from os import write
 
 import matplotlib.pyplot as plt
 import numpy as np
