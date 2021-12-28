@@ -15,8 +15,6 @@ from pandas.core.frame import DataFrame
 from PIL import Image
 
 
-def print_something():
-    st.write('Hi')
 
 
 # Tendencia de la infección por Covid-19 en un País.
