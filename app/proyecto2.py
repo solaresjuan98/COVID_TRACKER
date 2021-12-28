@@ -5,6 +5,7 @@ import streamlit as st
 from PIL import Image
 
 from covidcases import *
+from coviddeaths import *
 
 # Sidebar option tuple
 sid_opt_tuple = ('COVID Cases', 'COVID Deaths', 'Vaccines')
@@ -12,7 +13,7 @@ sid_opt_tuple = ('COVID Cases', 'COVID Deaths', 'Vaccines')
 #  **** OPTION TUPLES ****
 # Covid deaths
 covid_deaths_tuple = (
-    'Análisis del número de muertes por coronavirus en un País.', 'xd')
+    'Análisis del número de muertes por coronavirus en un País.', 'Predicción de mortalidad por COVID en un Departamento.')
 # Covid Cases
 covid_cases_tuple = ('Tendencia de la infección por Covid-19 en un País.',
                      'Predicción de Infertados en un País.', 'Ánalisis Comparativo entres 2 o más paises o continentes.')
@@ -60,7 +61,10 @@ if upload_file is not None:
 
         st.write(data)
         if select_report == 'Análisis del número de muertes por coronavirus en un País.':
-            pass
+            covidDeathsByCountry(data)
+        elif select_report == 'Predicción de mortalidad por COVID en un Departamento.':
+            covidDeathsPredictionByDep(data)
+
 
     elif sidebar_selectbox == 'Vaccines':
         pass

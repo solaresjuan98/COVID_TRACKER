@@ -22,15 +22,14 @@ def print_something():
 # Tendencia de la infección por Covid-19 en un País.
 def covidInfectionTendence(data: DataFrame):
 
-
-    data_options = st.multiselect('Select Fields', data.columns)
+    data_options = st.multiselect('Select fields', data.columns)
     # st.write(data_options)
     try:
         df = data[data_options[0]]
-        country_options = st.multiselect('Select Country', df)
+        country_options = st.multiselect('Select country', df)
         # st.write(country_options)
         # st.write(df.head(2))
-        
+
         country = data.loc[data[data_options[0]] == country_options[0]]
 
         # st.write(country.columns.__len__())
@@ -43,30 +42,30 @@ def covidInfectionTendence(data: DataFrame):
         x = country.columns[4:size-1]  # -> date
         x = pd.to_datetime(x, format='%m/%d/%y')
         # data.index = x
-        positive_cases = country.loc[:, country.columns[4]                                 :country.columns[size - 1]]  # -> positive_cases
+        positive_cases = country.loc[:, country.columns[4]
+            :country.columns[size - 1]]  # -> positive_cases
 
         data_index = positive_cases.index[0]
         st.write(positive_cases.loc[data_index])
 
         d = {'columns': country.columns[4:size - 1],
-            'data': [positive_cases.loc[data_index]], 'index': [1]}
+             'data': [positive_cases.loc[data_index]], 'index': [1]}
 
         # st.write(xd)
 
-        ## Plot graph
+        # Plot graph
         try:
 
-            df = pd.DataFrame(d['data'], columns=d['columns'], index=d['index'])
-            df.columns.names = ['SAMPLE']
+            df = pd.DataFrame(
+                d['data'], columns=d['columns'], index=d['index'])
+            df.columns.names = ['COVID INFECTIONS']
             row = df.iloc[0]
             row.plot(kind="line")
             plt.show()
             st.pyplot()
 
         except:
-            st.warning(':C')
-            pass
+            st.warning('The graph could not be generated')
+            
     except:
         st.warning("Please select a field")
-
-    
