@@ -4,8 +4,8 @@ import pandas as pd
 import streamlit as st
 from PIL import Image
 
-from covidcases import *
-from coviddeaths import *
+from covidcases import covidInfectionTendence
+from coviddeaths import covidDeathsByCountry,covidDeathsPredictionByDep 
 
 # Sidebar option tuple
 sid_opt_tuple = ('COVID Cases', 'COVID Deaths', 'Vaccines')
