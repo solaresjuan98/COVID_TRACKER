@@ -4,6 +4,7 @@ from matplotlib import colors
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from pandas.core import groupby
 import plotly
 import plotly.express as px
 import plotly.figure_factory as ff
@@ -17,6 +18,7 @@ from PIL import Image
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import PolynomialFeatures
+from streamlit.elements.arrow import Data
 
 # from covidcases import covidInfectionTendence
 # from coviddeaths import covidDeathsByCountry,covidDeathsPredictionByDep
@@ -94,6 +96,38 @@ def generatePredictionGraph(y: DataFrame, grade, days):
     st.pyplot()
     print(Y_NEW)
     pass
+
+
+def generateTendencyGraph(y: Data, header, maxY):
+    x = []
+    #y = country_infections[select_col[2]]
+
+    for i in range(0, y.__len__()):
+        x.append(i)
+
+    X = np.asarray(x).reshape(-1, 1)
+    reg = linear_model.LinearRegression()
+    reg.fit(X, y)
+    y_pred = reg.predict(X)
+
+    plt.scatter(X, y, color='black')
+    plt.plot(X, y_pred, color='blue', linewidth=3)
+
+    #print(reg.predict([[10]]))
+    max_val = maxY
+
+    # Header
+    st.header(header)
+
+    plt.ylim(-10, max_val + 10)
+    plt.show()
+    st.pyplot()
+    st.caption('COVID-19 tendence graph')
+    st.info("""Para poder comprender de mejor forma esta grafica, 
+    es importante tomar en cuenta la pendiente generada, por ejemplo si la pendiente es creciente (positiva) 
+    la tendencia de contagios en los dias siguientes al analisis será a la alta, pero si de lo contrario 
+    la pendiente de la grafica es decreciente (negativa), la tendencia numero de contagios es a la baja.
+    """)
 
 
 # ===================== METHODS =====================
@@ -178,13 +212,18 @@ def covidInfectedByDay(data: DataFrame):
         # group by and sum
         #st.write(country_infections.groupby([select_col[0], select_col[1]]).sum().sort_values(by='date'))
 
-        xd = country_infections.groupby(
+        fig = country_infections.groupby(
             [select_col[0],
-             select_col[1]]).sum().sort_values(by='date').head()
+             select_col[1]]).sum().sort_values(by=select_col[0]).head()
 
-        st.write(xd.head())
+        st.write(fig)
 
-        generatePredictionGraph(country_infections[select_col[2]], 2, 10)
+        # x = []
+        y = country_infections[select_col[2]]
+        hd = "COVID-19 Spread tendency in " + country[0]
+        max_val = country_infections[select_col[2]].max()
+
+        generateTendencyGraph(y, hd, max_val)
 
     except Exception as e:
         st.write(e)
@@ -355,53 +394,43 @@ def covidCasesByDep(data: DataFrame):
 
     try:
         # date, state, cases
-        data_options = st.multiselect('Select fields [date, region, cases]: ',
-                                      data.columns)
+        data_options = st.multiselect(
+            'Select fields [date, region, cases, filter]: ', data.columns)
 
         st.write(data_options)
 
-        country_option = st.multiselect('Select country', data[data_options[1]].drop_duplicates())
+        country_option = st.selectbox('Select country',
+                                      data[data_options[1]].drop_duplicates())
 
         ## select states
-        c = [country_option[0]]
-        cs =  data[data[data_options[1]].isin(c)]
+        c = [country_option]
+        cs = data[data[data_options[1]].isin(c)]
 
-        st.write(cs)
-       
+        # Select department
+        province = st.selectbox('Select state/province/department',
+                                cs[data_options[3]].drop_duplicates())
 
-        state_option = st.multiselect('Select state/province/department', cs.drop_duplicates())
+        #st.write(cs)
+        # Filter by deparment/state
+        dep = cs[data[data_options[3]].isin([province])]
 
-        # states = data[data_options[1]]
-        # dep_options = st.multiselect('Select Department/State/Province',
-        #                              states)
+        #st.write(dep)
+        #st.write(dep[[data_options[0], data_options[2]]])
 
-        # state = [dep_options[0]]
-        # flt = data[data.state.isin(state)]
-        # flt = flt[[data_options[0], data_options[2]]]
+        ## convert dates
+        dep[data_options[0]] = pd.to_datetime(dep[data_options[0]])
+        dep = dep.sort_values(by=data_options[0])
+        st.write(dep[[data_options[0], data_options[2]]])
 
-        # st.write(flt)
+        y = dep[data_options[2]]
+        hd = "COVID-19 Spread tendency in " + province
+        max_val = dep[data_options[2]].max()
+        #st.write(max_val)
+        generateTendencyGraph(y, hd, max_val)
 
-        # make graphic
-        # st.set_option('deprecation.showPyplotGlobalUse', False)
-        # st.write("# Covid cases in ", state[0])
-        # flt[data_options[0]] = pd.to_datetime(flt.date, format="%m/%d/%Y")
-        # flt.index = flt[data_options[0]]
-        # plt.plot(flt[data_options[2]], label="Covid cases history")
-        # st.pyplot()
-
-        # cormat = flt.corr()
-        # f, ax = plt.subplots(figsize=(12, 9))
-        # sns.heatmap(cormat, vmax=0.8, square=True)
-        # st.pyplot()
-        # Linear regression
-        # f, ax = plt.subplots(figsize=(10, 8))
-        # sns.regplot(x='date', y='positive', data=flt, ax=ax)
-        # st.pyplot()
-
-        # st.write(flt)
     except Exception as e:
         st.write(e)
-        st.write('Select a field')
+        st.warning('Select a field')
 
 
 # Tendencia de la infección por Covid-19 en un País.
@@ -410,53 +439,33 @@ def covidInfectionTendence(data: DataFrame):
     data_options = st.multiselect('Select fields', data.columns)
     # st.write(data_options)
     try:
-        df = data[data_options[0]]
-        country_options = st.multiselect('Select country', df)
-        # st.write(country_options)
-        # st.write(df.head(2))
 
-        country = data.loc[data[data_options[0]] == country_options[0]]
+        country_options = st.multiselect(
+            'Select country', data[data_options[0]].drop_duplicates())
 
-        # st.write(country.columns.__len__())
-        size = country.columns.__len__()
+        country = [country_options[0]]
 
-        #st.write(country.columns[4:size - 1])
-        # st.write(country[country.columns[4]])
+        flt = data[data[data_options[0]].isin(country)]
 
-        # Generate graph
-        x = country.columns[4:size - 1]  # -> date
-        x = pd.to_datetime(x, format='%m/%d/%y')
-        # data.index = x
-        positive_cases = country.loc[:, country.columns[4]:country.columns[
-            size - 1]]  # -> positive_cases
+        variable = st.multiselect(
+            'Select variables to analize [date, numeric]: ', data.columns)
+        #st.write(flt)
 
-        data_index = positive_cases.index[0]
-        st.write(positive_cases.loc[data_index])
+        # data
 
-        d = {
-            'columns': country.columns[4:size - 1],
-            'data': [positive_cases.loc[data_index]],
-            'index': [1]
-        }
+        flt[variable[0]] = pd.to_datetime(flt[variable[0]])
+        flt[variable[0]] = flt[variable[0]]
 
-        # st.write(xd)
+        flt = flt[[variable[0], variable[1]]].sort_values(by=[variable[0]])
 
-        # Plot graph
-        try:
+        st.write(flt)
+        #sum
+        st.write(flt.groupby(['date', 'deaths']).sum().reset_index())
 
-            df = pd.DataFrame(d['data'],
-                              columns=d['columns'],
-                              index=d['index'])
-            df.columns.names = ['COVID INFECTIONS']
-            row = df.iloc[0]
-            row.plot(kind="line")
-            plt.show()
-            st.pyplot()
+        # Tendency
 
-        except:
-            st.warning('The graph could not be generated')
-
-    except:
+    except Exception as e:
+        st.write(e)
         st.warning("Please select a field")
 
 
