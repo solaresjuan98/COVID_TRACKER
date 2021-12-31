@@ -1,20 +1,20 @@
 import datetime as dt
-from matplotlib import colors
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from pandas.core import groupby
 import plotly
 import plotly.express as px
 import plotly.figure_factory as ff
 import seaborn as sns
-from sklearn import linear_model
 import streamlit as st
+from matplotlib import colors
 from pandas._config.config import options
+from pandas.core import groupby
 from pandas.core.algorithms import mode
 from pandas.core.frame import DataFrame
 from PIL import Image
+from sklearn import linear_model
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import PolynomialFeatures
@@ -24,7 +24,7 @@ from streamlit.elements.arrow import Data
 # from coviddeaths import covidDeathsByCountry,covidDeathsPredictionByDep
 
 
-def generatePredictionGraph(y: DataFrame, grade, days):
+def generatePredictionGraph(y: DataFrame, grade, days, max_val):
 
     X = []
     Y = y
@@ -48,7 +48,7 @@ def generatePredictionGraph(y: DataFrame, grade, days):
     plt.show()
     st.pyplot()
 
-    st.write(Y)
+    # st.write(Y)
     # Step 2: Data preparation
     nb_degree = grade
 
@@ -84,17 +84,19 @@ def generatePredictionGraph(y: DataFrame, grade, days):
 
     plt.grid()
     plt.xlim(x_new_min, x_new_max)  ## X axis
-    #plt.ylim(Y_NEW[int(x_new_min)], Y_NEW[int(x_new_max)])
-    plt.ylim(0, 100)
+
+    plt.ylim(0, 1000)
+    #plt.ylim(0, Y_NEW[int(x_new_max)])
     #title = 'Degree={ }; RMSE={ }; R2={ }'.format(nb_degree, round(rmse, 2), round(r2, 2))
-    plt.title('Covid prediction')
+    plt.title('Prediction')
     plt.xlabel('x')
     plt.ylabel('y')
 
     plt.savefig('pol_reg.jpg', bbox_inches='tight')
     plt.show()
     st.pyplot()
-    print(Y_NEW)
+    st.write("The prediction will be ", Y_NEW[int(x_new_max)][0])
+    st.write(Y_NEW)
     pass
 
 
@@ -170,16 +172,118 @@ def covidInfectedPredictionByCountry(data: DataFrame):
 
 # Indice de Progresión de la pandemia.
 
+
 # Predicción de mortalidad por COVID en un Departamento.
+def covidDeathsPredictionByDeparment(data: DataFrame):
+
+    try:
+        # date, state, cases
+        data_options = st.multiselect(
+            'Select fields [date, region, cases, filter]: ', data.columns)
+
+        date_ = data_options[0]
+        region = data_options[1]
+        cases = data_options[2]
+        flter = data_options[3]
+
+        st.write(data_options)
+
+        country_option = st.selectbox('Select country',
+                                      data[region].drop_duplicates())
+
+        ## select states
+        c = [country_option]
+        cs = data[data[region].isin(c)]
+
+        province = st.selectbox('Select state/province/department',
+                                cs[flter].drop_duplicates())
+
+        # Filter by deparment/state
+        dep = cs[data[flter].isin([province])]
+
+        ## convert dates
+        dep[date_] = pd.to_datetime(dep[date_])
+        dep = dep.sort_values(by=date_)
+        st.write(dep[[date_, cases]])
+
+        y = dep[cases]
+
+        # slider
+        n_days = st.slider('Select number of days to predict: ', 5, 100)
+        grade = st.slider('Select grade of the regression: ', 1, 3)
+        max_val = dep[cases].max()
+
+        generatePredictionGraph(y, grade, n_days, max_val)
+
+    except Exception as e:
+        st.write(e)
+        st.warning('Select a field')
 
 
 # Ánalisis Comparativo entres 2 o más paises o continentes.
 def covidComparative(data: DataFrame):
 
-    option = st.selectbox('Select type of comparation: ',
-                          ('Countries', 'Continents'))
+    try:
 
-    pass
+        option = st.multiselect('Select field and variable of comparation [place, variable, group by] : ', data.columns)
+
+        place = option[0]
+        variable  = option[1]
+        col1, col2 = st.columns(2)
+
+
+        with col1:
+
+            st.subheader('Select Place 1:')
+            country1 = st.selectbox('Select country 1: ', data[place].drop_duplicates())
+            p1 = data[data[place].isin([country1])]
+
+            # st.write(p1[variable].sum())
+            t1 = p1[variable].sum()
+
+        with col2:
+
+            st.subheader('Select Place 2:')
+            country2 = st.selectbox('Select country 2: ', data[place].drop_duplicates()) 
+            p2 = data[data[place].isin([country2])]
+
+            # st.write(p2[variable].sum())
+            t2 = p2[variable].sum()
+             
+
+        ## Graph
+        plotdata = pd.DataFrame({
+            str(variable): [t1, t2],
+        },
+            index=[country1, country2]
+        )
+
+        plotdata.plot(kind="bar", color="green")
+        plt.title("Comparative")
+        st.pyplot()
+
+    except Exception as e:
+
+            st.write(e)
+            st.warning('Error :(')
+
+    
+
+    # if option == 'Countries':
+
+        
+
+    # elif option == 'Continents':
+
+    #     col1, col2 = st.columns(2)
+
+    #     with col1:
+    #         st.subheader('Select Continent 1:')
+    #         continent1 = st.selectbox('Select continent 1: ', data.columns)
+
+    #     with col2:
+    #         st.subheader('Select Continent 2:')
+    #         continent2 = st.selectbox('Select continent 2: ', data.columns)
 
 
 # Tendencia del número de infectados por día de un País
@@ -545,12 +649,13 @@ if upload_file is not None:
 
         select_report = st.selectbox('Select report', covid_deaths_tuple)
 
-        # st.write(data)
+        st.write(data)
         if select_report == 'Análisis del número de muertes por coronavirus en un País.':
             covidDeathsByCountry(data)
+
         elif select_report == 'Predicción de mortalidad por COVID en un Departamento.':
-            # covidDeathsPredictionByDep(data)
-            pass
+            covidDeathsPredictionByDeparment(data)
+
         elif select_report == 'Predicción de mortalidad por COVID en un País':
             covidDeathPredictionByCountry(data)
 
