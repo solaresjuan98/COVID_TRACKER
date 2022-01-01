@@ -102,7 +102,7 @@ def generatePredictionGraph(y: DataFrame, grade, days, max_val):
     st.write("La predicción será de ",  Y_NEW[int(Y_NEW.size-1)][0])
 
     #
-    fig = ff.create_distplot(Y_NEW, ['test'], bin_size=[0] )
+    #fig = ff.create_distplot(Y_NEW, ['test'], bin_size=[0] )
 
     pass
 
