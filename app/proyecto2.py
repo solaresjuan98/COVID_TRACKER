@@ -88,8 +88,8 @@ def generatePredictionGraph(y: DataFrame, grade, days, max_val):
     plt.grid()
     plt.xlim(x_new_min, x_new_max)  ## X axis
 
-    plt.ylim(0, 1000000)
-    #plt.ylim(0, Y_NEW[int(x_new_max)])
+    
+    plt.ylim(0, Y_NEW[int(Y_NEW.size-1)])
     #title = 'Degree={ }; RMSE={ }; R2={ }'.format(nb_degree, round(rmse, 2), round(r2, 2))
     plt.title('Prediction')
     plt.xlabel('x')
@@ -98,8 +98,12 @@ def generatePredictionGraph(y: DataFrame, grade, days, max_val):
     plt.savefig('pol_reg.jpg', bbox_inches='tight')
     plt.show()
     st.pyplot()
-    #st.write("The prediction will be ", Y_NEW[int(x_new_max)][0])
-    st.write(Y_NEW)
+    st.caption('Prediction graph')
+    st.write("La predicción será de ",  Y_NEW[int(Y_NEW.size-1)][0])
+
+    #
+    fig = ff.create_distplot(Y_NEW, ['test'], bin_size=[0] )
+
     pass
 
 
@@ -152,25 +156,41 @@ def covidInfectionTendence(data: DataFrame):
 
         flt = data[data[data_options[0]].isin(country)]
 
-        variable = st.multiselect(
-            'Select variables to analize [date, numeric]: ', data.columns)
-        #st.write(flt)
-        st.write(variable)
-        # data
+        have_date = st.checkbox('This file has "date" field')
 
-        flt[variable[0]] = pd.to_datetime(flt[variable[0]])
-        flt[variable[0]] = flt[variable[0]]
+        st.write(have_date)
 
-        flt = flt[[variable[0], variable[1]]].sort_values(by=[variable[0]])
+        if have_date:
+            variable = st.multiselect(
+                'Select variables to analize [date, numeric]: ', data.columns)
+            #st.write(flt)
+            st.write(variable)
+            # data
 
-        st.write(flt)
-        #sum
-        st.write(flt.groupby([variable[0], variable[1]]).sum().reset_index())
+            flt[variable[0]] = pd.to_datetime(flt[variable[0]])
+            flt[variable[0]] = flt[variable[0]]
 
-        # Tendency
-        generateTendencyGraph(flt[variable[1]],
-                              "Tendency COVID spread by country",
-                              flt[variable[1]].max())
+            flt = flt[[variable[0], variable[1]]].sort_values(by=[variable[0]])
+
+            st.write(flt)
+            #sum
+            st.write(
+                flt.groupby([variable[0], variable[1]]).sum().reset_index())
+
+            # Tendency
+            generateTendencyGraph(flt[variable[1]],
+                                  "Tendency COVID spread by country",
+                                  flt[variable[1]].max())
+        else:
+            variable = st.selectbox('Select variable to analyze: ',
+                                    data.columns)
+
+            st.write(flt[variable])
+
+            generateTendencyGraph(flt[variable],
+                                  "Tendency COVID spread by country",
+                                  flt[variable].max())
+
     except Exception as e:
         st.write(e)
         st.warning("Please select a field")
@@ -179,28 +199,52 @@ def covidInfectionTendence(data: DataFrame):
 # Predicción de Infectados en un País.
 def covidInfectedPredictionByCountry(data: DataFrame):
 
-    option = st.multiselect('Select date, country and numeric variable: ',
-                            data.columns)
+    have_date = st.checkbox('This file has "date" field')
 
     try:
+        if have_date:
+            option = st.multiselect(
+                'Select date, country and numeric variable: ', data.columns)
 
-        df = data[[option[0], option[1], option[2]]]
-        #st.write(df)
-        country = st.selectbox('Select country: ',
-                               df[[option[1]]].drop_duplicates())
+            df = data[[option[0], option[1], option[2]]]
+            #st.write(df)
+            country = st.selectbox('Select country: ',
+                                   df[[option[1]]].drop_duplicates())
 
-        # Filter data by country
-        c = [country]
+            # Filter data by country
+            c = [country]
 
-        data[data[option[1]].isin(c)]
+            data[data[option[1]].isin(c)]
 
-        y = data[option[2]]
+            y = data[option[2]]
 
-        days = st.slider('Select a number of days to predict', 5, 1000)
+            days = st.slider('Select a number of days to predict', 5, 1000)
 
-        grade = st.slider('Select a polynomial grade prediction: ', 1, 5)
-        print(y)
-        generatePredictionGraph(y, grade, days, y.max())
+            grade = st.slider('Select a polynomial grade prediction: ', 1, 5)
+            # print(y)
+            generatePredictionGraph(y, grade, days, y.max())
+
+        else:
+
+            option = st.multiselect(
+                'Select a field, and numeric variable to filter [ex. country, infections]: ',
+                data.columns)
+
+            country = st.selectbox('Select country',
+                                   data[option[0]].drop_duplicates())
+
+            data = data[data[option[0]].isin([country])]
+
+            data[[option[0], option[1]]]
+
+            days = st.slider('Select a number of days to predict', 5, 1000)
+
+            grade = st.slider('Select a polynomial grade prediction: ', 1, 5)
+
+            y = data[option[1]]
+            generatePredictionGraph(y, grade, days, y.max())
+            #st.write(data)
+            pass
 
     except Exception as e:
         st.write(e)
@@ -577,43 +621,21 @@ def covidDeathPredictionByCountry(data: DataFrame):
 # Análisis del número de muertes por coronavirus en un País.
 def covidDeathsByCountry(data: DataFrame):
 
-    data_options = st.multiselect('Select fields: ', data.columns)
+    data_options = st.multiselect(
+        'Select field, and variables to analize [ex. country, deaths, date]: ',
+        data.columns)
 
     try:
-        df = data[data_options[0]]
-        country_options = st.multiselect('Select country', df)
 
-        country = data.loc[data[data_options[0]] == country_options[0]]
+        country = st.selectbox('Select country',
+                               data[data_options[0]].drop_duplicates())
 
-        size = country.columns.__len__()
+        data = data[data[data_options[0]].isin([country])]
 
-        # Generate Graph
-        x = country.columns[4:size - 1]
-        x = pd.to_datetime(x, format='%m/%d/%y')
+        data[data_options[2]] = pd.to_datetime(data[data_options[2]])
 
-        deaths = country.loc[:, country.columns[4]:country.columns[size - 1]]
-        data_index = deaths.index[0]
-
-        d = {
-            'columns': country.columns[4:size - 1],
-            'data': [deaths.loc[data_index]],
-            'index': [1]
-        }
-
-        # plot graph
-        try:
-            st.set_option('deprecation.showPyplotGlobalUse', False)
-            df = pd.DataFrame(d['data'],
-                              columns=d['columns'],
-                              index=d['index'])
-            df.columns.names = ['Covid deaths']
-            row = df.iloc[0]
-            row.plot(kind="line")
-            plt.show()
-            st.pyplot()
-
-        except:
-            st.warning('The graph could not be generated')
+        st.subheader('Deaths analysis in {}'.format(country))
+        st.write(data[[data_options[1], data_options[2]]])
 
     except:
         st.warning("Please select a field")
