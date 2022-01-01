@@ -760,10 +760,11 @@ def performoranceRateCasesDeaths(data: DataFrame):
         flt[date_] = pd.to_datetime(flt[date_])
         #flt[[date_, cases, deaths]]
 
-
         st.line_chart(flt[[cases, deaths]])
         st.caption('Cases / Deaths performance during the pandemic. ')
-        st.info('Esta grafica muestra el comportamiento de las muertes y los casos confirmados a lo largo de la pandemia en {}'.format(place))
+        st.info(
+            'Esta grafica muestra el comportamiento de las muertes y los casos confirmados a lo largo de la pandemia en {}'
+            .format(place))
 
         pass
     except Exception as e:
