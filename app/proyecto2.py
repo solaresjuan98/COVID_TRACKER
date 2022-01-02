@@ -24,9 +24,6 @@ from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import PolynomialFeatures
 from streamlit.elements.arrow import Data
 
-# from covidcases import covidInfectionTendence
-# from coviddeaths import covidDeathsByCountry,covidDeathsPredictionByDep
-
 
 def generatePredictionGraph(y: DataFrame, grade, days, max_val):
 
@@ -153,47 +150,60 @@ def covidInfectionTendence(data: DataFrame):
     # st.write(data_options)
     try:
 
-        country_options = st.multiselect(
-            'Select country', data[data_options[0]].drop_duplicates())
-
-        country = [country_options[0]]
-
-        flt = data[data[data_options[0]].isin(country)]
-
-        have_date = st.checkbox('This file has "date" field')
-
-        st.write(have_date)
-
-        if have_date:
-            variable = st.multiselect(
-                'Select variables to analize [date, numeric]: ', data.columns)
-            #st.write(flt)
-            st.write(variable)
-            # data
-
-            flt[variable[0]] = pd.to_datetime(flt[variable[0]])
-            flt[variable[0]] = flt[variable[0]]
-
-            flt = flt[[variable[0], variable[1]]].sort_values(by=[variable[0]])
-
-            st.write(flt)
-            #sum
-            st.write(
-                flt.groupby([variable[0], variable[1]]).sum().reset_index())
-
-            # Tendency
-            generateTendencyGraph(flt[variable[1]],
-                                  "Tendency COVID spread by country",
-                                  flt[variable[1]].max())
+        if data_options.__len__() == 0:
+            st.warning('Please select a column')
         else:
-            variable = st.selectbox('Select variable to analyze: ',
-                                    data.columns)
 
-            st.write(flt[variable])
+            country_options = st.selectbox(
+                'Select country', data[data_options[0]].drop_duplicates())
 
-            generateTendencyGraph(flt[variable],
-                                  "Tendency COVID spread by country",
-                                  flt[variable].max())
+            country = [country_options]
+
+            flt = data[data[data_options[0]].isin(country)]
+
+            have_date = st.checkbox('This file has "date" field')
+
+            #st.write(have_date)
+
+            if have_date:
+                variable = st.multiselect(
+                    'Select variables to analize [date, numeric]: ',
+                    data.columns)
+
+                if variable.__len__() == 0:
+                    st.warning('Please select variables to analize')
+
+                else:
+
+                    st.write(variable)
+                    # data
+
+                    flt[variable[0]] = pd.to_datetime(flt[variable[0]])
+                    flt[variable[0]] = flt[variable[0]]
+
+                    flt = flt[[variable[0],
+                               variable[1]]].sort_values(by=[variable[0]])
+
+                    st.write(flt)
+                    #sum
+                    st.write(
+                        flt.groupby([variable[0],
+                                     variable[1]]).sum().reset_index())
+
+                    # Tendency
+                    generateTendencyGraph(flt[variable[1]],
+                                          "Tendency COVID spread by country",
+                                          flt[variable[1]].max())
+
+            else:
+                variable = st.selectbox('Select variable to analyze: ',
+                                        data.columns)
+
+                st.write(flt[variable])
+
+                generateTendencyGraph(flt[variable],
+                                      "Tendency COVID spread by country",
+                                      flt[variable].max())
 
             #generatePredictionGraph(flt[variable], 3, 40, flt[variable].max())
 
@@ -262,6 +272,33 @@ def covidInfectedPredictionByCountry(data: DataFrame):
 
 
 # 3. Indice de Progresión de la pandemia.
+def pandemicProgression(data: DataFrame):
+
+    options = st.multiselect('Select variable and order by [cases, date]: ',
+                             data.columns)
+
+    if options.__len__() < 2:
+
+        st.warning('Please select a numeric variable and date')
+
+    else:
+
+        cases = options[0]
+        date_ = options[1]
+
+        data = data[[date_, cases]]
+
+        data[date_] = pd.to_datetime(data[date_])
+        data = data.sort_values(by=date_)
+        data = data.groupby(date_)[cases].sum()
+        st.write(data)
+
+        st.subheader('Global pandemic progression')
+        st.line_chart(data)
+        st.caption('Pandemic progression')
+
+        generateTendencyGraph(data, 'Pandemic progression regression',
+                              data.max())
 
 
 # 4. Predicción de mortalidad por COVID en un Departamento.
@@ -314,113 +351,54 @@ def covidDeathsPredictionByDeparment(data: DataFrame):
 # 5. Predicción de mortalidad por COVID en un País (ARRRRRREGLAR)
 def covidDeathPredictionByCountry(data: DataFrame):
 
-    data_options = st.multiselect('Select fields', data.columns)
-
     try:
-        df = data[data_options[0]]
-        country_options = st.multiselect('Select country: ', df)
-        country = data.loc[data[data_options[0]] == country_options[0]]
-        size = country.columns.__len__()
+
+        options_selected = st.multiselect(
+            'Select fields to filter [country, deaths]: ', data.columns)
+
+        fltr = options_selected[1]
+
+        if options_selected.__len__() == 0:
+            st.warning('Plase select fields to filter')
+        else:
+
+            country = st.selectbox('Please select a country: ',
+                                   data[options_selected[0]].drop_duplicates())
+
+            data = data[data[options_selected[0]].isin([country])]
+            has_date = st.checkbox('The file has "date" field')
+            data
+
+            if has_date:
+
+                date_ = st.selectbox('Select a type "date" field ',
+                                     data.columns)
+
+                data[date_] = pd.to_datetime(data[date_])
+
+                data = data.sort_values(by=date_).reset_index()
+                data[fltr]
+
+                n_days = st.slider('Select a number of days to predict: ', 100,
+                                   1000)
+                grade = st.slider('Select grade of the polynomial grade: ', 1,
+                                  10)
+
+                generatePredictionGraph(data[fltr], grade, n_days,
+                                        data[fltr].max())
+
+            else:
+                pass
+
+    except Exception as e:
+        st.write(e)
+        st.warning('An error has occurred')
 
         #
-        start = st.slider("Select a start day: ", 0, size)
-        end = st.slider("Select an end day: ", 0, size)
 
-        if end > start:
-            # x axis
-            st.write("Range between ", country.columns[start], " and ",
-                     country.columns[end])
-            # st.write(country[start])
-            x = country.columns[4:size - 1]
-            x = pd.to_datetime(x, format='%m/%d/%y')
-            # y axis
-            deaths = country.loc[:,
-                                 country.columns[4]:country.columns[size - 1]]
-            data_index = deaths.index[0]
+        #flt[[]]
 
-            st.write(deaths.loc[data_index][end])  # No borrar XD
-            X = []
-            Y = deaths.loc[data_index][start:end]
-            # st.write(deaths.loc[data_index][start:end])
-            for i in range(start, end):
-
-                X.append(i)
-
-            X = np.asarray(X)
-            Y = np.asarray(Y)
-
-            X = X[:, np.newaxis]
-            Y = Y[:, np.newaxis]
-
-            plt.scatter(X, Y)
-            plt.show()
-            st.pyplot()
-
-            # Step 2:
-            nb_degree = 3
-
-            polynomial_features = PolynomialFeatures(degree=nb_degree)
-            X_TRANSF = polynomial_features.fit_transform(X)
-
-            # Step 3:
-            model = LinearRegression()
-            model.fit(X_TRANSF, Y)
-
-            # Step 4:
-            Y_NEW = model.predict(X_TRANSF)
-
-            rmse = np.sqrt(mean_squared_error(Y, Y_NEW))
-            r2 = r2_score(Y, Y_NEW)
-
-            st.write('RMSE: ', rmse)
-            st.write('R2', r2)
-
-            # Step 5:
-            n_days = st.slider("Days to predict ", 0, 100)
-            x_new_min = start
-            x_new_max = start + n_days
-
-            X_NEW = np.linspace(x_new_min, x_new_max)
-            X_NEW = X_NEW[:, np.newaxis]
-
-            X_NEW_TRANSF = polynomial_features.fit_transform(X_NEW)
-            Y_NEW = model.predict(X_NEW_TRANSF)
-
-            plt.plot(X_NEW, Y_NEW, color='coral', linewidth=3)
-
-            plt.grid()
-            plt.xlim(x_new_min, x_new_max)
-            # st.write(Y[x_new_max])
-            plt.ylim(0, deaths.loc[data_index][end] + 50)
-
-            st.write("## Covid deaths prediction for ",
-                     country.columns[start + n_days])
-
-            plt.title('Covid prediction')
-            plt.xlabel('x')
-            plt.ylabel('y')
-
-            plt.show()
-            st.pyplot()
-
-            # image = plt.savefig('pol_reg.jpg', bbox_inches='tight')
-            # with open(image, "rb") as file:
-            #     btn = st.download_button(
-            #             label="Download image",
-            #             data=file,
-            #             file_name="image.png",
-            #             mime="image/jpg"
-            #         )
-
-        try:
-            st.write("")
-
-        except:
-            st.warning('The graph could not be generated')
-
-    except:
-
-        st.warning('Please select a field')
+        #st.write(options_selected)
 
 
 # 6. Análisis del número de muertes por coronavirus en un País.
@@ -1042,6 +1020,7 @@ covid_deaths_tuple = (
 # Covid Cases
 covid_cases_tuple = (
     'Tendencia de la infección por Covid-19 en un País.',
+    'Indice de Progresión de la pandemia.',
     'Predicción de Infectados en un País.',
     'Ánalisis Comparativo entres 2 o más paises o continentes.',
     'Tendencia del número de infectados por día de un País',
@@ -1094,6 +1073,9 @@ if upload_file is not None:
 
         elif select_report == 'Tendencia de casos confirmados de Coronavirus en un departamento de un País':
             covidCasesByDep(data)
+
+        elif select_report == 'Indice de Progresión de la pandemia.':
+            pandemicProgression(data)
 
         elif select_report == 'Predicción de Infectados en un País.':
             covidInfectedPredictionByCountry(data)
@@ -1159,6 +1141,6 @@ if upload_file is not None:
 
 else:
 
-    st.warning("the file is empty or invalid, please upload a valid file")
+    st.warning("The file is empty or invalid, please upload a valid file")
 
 # ## Validate sidebar option
