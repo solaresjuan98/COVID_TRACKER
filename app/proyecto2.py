@@ -671,7 +671,15 @@ def covidDeathsByCountry(data: DataFrame):
         st.subheader('Deaths analysis in {}'.format(country))
         st.write(data[[data_options[1], data_options[2]]])
 
-    except:
+
+        y = data[data_options[1]]
+
+        generateTendencyGraph(y, 'Deaths in {}'.format(country), y.max())
+
+
+
+    except Exception as e:
+        st.write(e)
         st.warning("Please select a field")
 
 
