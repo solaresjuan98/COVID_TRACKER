@@ -46,7 +46,7 @@ def generatePredictionGraph(y: DataFrame, grade, days, max_val):
     X = X[:, np.newaxis]
     Y = Y[:, np.newaxis]
 
-    # GRAPH 1 
+    # GRAPH 1
     #st.subheader("Plot graph")
     #st.set_option('deprecation.showPyplotGlobalUse', False)
     #plt.scatter(X, Y)
@@ -84,7 +84,7 @@ def generatePredictionGraph(y: DataFrame, grade, days, max_val):
     X_NEW_TRANSF = polynomial_features.fit_transform(X_NEW)
 
     Y_NEW = model.predict(X_NEW_TRANSF)
-    
+
     st.subheader("Plot graph")
     plt.scatter(X, Y)
     plt.plot(X_NEW, Y_NEW, color='green', linewidth=3)
@@ -134,18 +134,19 @@ def generateTendencyGraph(y, header, maxY):
     plt.ylim(-10, max_val + 10)
     plt.show()
     st.pyplot()
+    st.set_option('deprecation.showPyplotGlobalUse', False)
     st.caption('COVID-19 tendence graph')
-    st.info("""Para poder comprender de mejor forma esta grafica,
-    es importante tomar en cuenta la pendiente generada, por ejemplo si la pendiente es creciente (positiva)
-    la tendencia de contagios en los dias siguientes al analisis será a la alta, pero si de lo contrario
-    la pendiente de la grafica es decreciente (negativa), la tendencia numero de contagios es a la baja.
-    """)
+    # st.info("""Para poder comprender de mejor forma esta grafica,
+    # es importante tomar en cuenta la pendiente generada, por ejemplo si la pendiente es creciente (positiva)
+    # la tendencia de contagios en los dias siguientes al analisis será a la alta, pero si de lo contrario
+    # la pendiente de la grafica es decreciente (negativa), la tendencia numero de contagios es a la baja.
+    # """)
 
 
 # ===================== METHODS =====================
 
 
-# Tendencia de la infección por Covid-19 en un País.
+# 1. Tendencia de la infección por Covid-19 en un País.
 def covidInfectionTendence(data: DataFrame):
 
     data_options = st.multiselect('Select filter [country]: ', data.columns)
@@ -201,7 +202,7 @@ def covidInfectionTendence(data: DataFrame):
         st.warning("Please select a field")
 
 
-# Predicción de Infectados en un País.
+# 2.  Predicción de Infectados en un País.
 def covidInfectedPredictionByCountry(data: DataFrame):
 
     have_date = st.checkbox('This file has "date" field')
@@ -260,97 +261,10 @@ def covidInfectedPredictionByCountry(data: DataFrame):
     pass
 
 
-# Indice de Progresión de la pandemia.
+# 3. Indice de Progresión de la pandemia.
 
 
-# Tendencia de la vacunación de en un País.
-def vaccinationTendencyByCountry(data: DataFrame):
-
-    data_options = st.multiselect(
-        'Select [date, country/region, and numeric variable]: ', data.columns)
-
-    try:
-
-        region = data_options[1]
-
-        country = st.selectbox('Select country: ',
-                               data[region].drop_duplicates())
-
-        data = data[data[region].isin([country])]
-
-        st.write(data)
-
-        vac = data[data_options[2]]
-
-        st.write(vac)
-
-        generateTendencyGraph(vac, "Vaccines trend graph", vac.max() + 500)
-
-    except Exception as e:
-        st.write(e)
-        st.warning(":c")
-
-
-# Ánalisis Comparativo de Vacunación entre 2 paises.
-def vaccinationComparationByCountries(data: DataFrame):
-
-    try:
-
-        option = st.multiselect(
-            'Select field and variable of comparation [place, variable, group by] : ',
-            data.columns)
-
-        place = option[0]
-        variable = option[1]
-        col1, col2 = st.columns(2)
-
-        with col1:
-
-            st.subheader('Select Place 1:')
-            country1 = st.selectbox('Select country 1: ',
-                                    data[place].drop_duplicates())
-            p1 = data[data[place].isin([country1])]
-
-            #st.write(p1[variable])
-            t1 = p1[variable].sum()
-            generateTendencyGraph(p1[variable], 'Country1', p1[variable].max())
-
-        with col2:
-
-            st.subheader('Select Place 2:')
-            country2 = st.selectbox('Select country 2: ',
-                                    data[place].drop_duplicates())
-            p2 = data[data[place].isin([country2])]
-
-            #st.write(p2[variable])
-            t2 = p2[variable].sum()
-            generateTendencyGraph(p2[variable], 'Country2', p2[variable].max())
-
-        ## graph
-        plotdata = pd.DataFrame({str(variable): [t1, t2]},
-                                index=[country1, country2])
-
-        st.bar_chart(plotdata)
-        st.caption('Vaccination comparative graph')
-
-        ## Interpretación
-        if t1 > t2:
-            st.info(
-                'De acuerdo a la grafica, {} presenta una mejor tasa de vacunacion que {}'
-                .format(country1, country2))
-
-        # st.set_option('deprecation.showPyplotGlobalUse', False)
-        # plotdata.plot(kind="bar", color="green")
-        # plt.title("Comparative")
-        # st.pyplot()
-
-    except Exception as e:
-
-        st.write(e)
-        st.warning('Error :(')
-
-
-# Predicción de mortalidad por COVID en un Departamento.
+# 4. Predicción de mortalidad por COVID en un Departamento.
 def covidDeathsPredictionByDeparment(data: DataFrame):
 
     try:
@@ -397,150 +311,7 @@ def covidDeathsPredictionByDeparment(data: DataFrame):
         st.warning('Select a field')
 
 
-# Ánalisis Comparativo entres 2 o más paises o continentes.
-def covidComparative(data: DataFrame):
-
-    try:
-
-        option = st.multiselect(
-            'Select field and variable of comparation [place, variable, group by] : ',
-            data.columns)
-
-        place = option[0]
-        variable = option[1]
-
-        countries = st.multiselect('Select list of countries: ',
-                                   data[place].drop_duplicates())
-        st.write(countries)
-
-        elements = []
-        #size =
-        if countries.__len__() >= 2:
-
-            for i in range(0, countries.__len__()):
-                country = countries[i]
-                temp = data[data[place].isin([country])]
-                val = temp[variable].sum()
-                elements.append(val)
-
-            # Graph
-            plotdata = pd.DataFrame({
-                str(variable): elements,
-            },
-                                    index=[countries])
-
-            st.set_option('deprecation.showPyplotGlobalUse', False)
-            plotdata.plot(kind="bar", color="blue")
-            plt.title("Comparative")
-            st.pyplot()
-
-        else:
-            st.warning('Please, select more countries ')
-
-        # col1, col2 = st.columns(2)
-
-        # with col1:
-
-        #     st.subheader('Select Place 1:')
-        #     country1 = st.selectbox('Select country 1: ',
-        #                             data[place].drop_duplicates())
-        #     p1 = data[data[place].isin([country1])]
-
-        #     st.write(p1[variable].sum())
-        #     t1 = p1[variable].sum()
-
-        # with col2:
-
-        #     st.subheader('Select Place 2:')
-        #     country2 = st.selectbox('Select country 2: ',
-        #                             data[place].drop_duplicates())
-        #     p2 = data[data[place].isin([country2])]
-
-        #     st.write(p2[variable].sum())
-        #     t2 = p2[variable].sum()
-
-        # ## Graph
-        # plotdata = pd.DataFrame({
-        #     str(variable): [t1, t2],
-        # },
-        #                         index=[country1, country2])
-
-        # st.set_option('deprecation.showPyplotGlobalUse', False)
-        # plotdata.plot(kind="bar", color="green")
-        # plt.title("Comparative")
-        # st.pyplot()
-
-    except Exception as e:
-
-        st.write(e)
-        st.warning('Error :(')
-
-    # if option == 'Countries':
-
-    # elif option == 'Continents':
-
-    #     col1, col2 = st.columns(2)
-
-    #     with col1:
-    #         st.subheader('Select Continent 1:')
-    #         continent1 = st.selectbox('Select continent 1: ', data.columns)
-
-    #     with col2:
-    #         st.subheader('Select Continent 2:')
-    #         continent2 = st.selectbox('Select continent 2: ', data.columns)
-
-
-# Tendencia del número de infectados por día de un País
-def covidInfectedByDay(data: DataFrame):
-
-    select_col = st.multiselect(
-        'Select a columns to parameterize (date, country and numeric variable): ',
-        data.columns)
-
-    #st.write(select_col)
-
-    try:
-        # select_date = st.selectbox('Select a date: ',
-        #                            data[select_col[0]].drop_duplicates())
-
-        select_country = st.selectbox('Select a country: ',
-                                      data[select_col[1]].drop_duplicates())
-
-        ## Filter data
-        country = [select_country]
-
-        country_infections = data[data[select_col[1]].isin(country)]  ##
-
-        ## sort
-        country_infections[select_col[0]] = pd.to_datetime(
-            country_infections[
-                select_col[0]])  #country_infections.sort_values(by='Date')
-        st.write(country_infections)
-
-        # group by and sum
-        #st.write(country_infections.groupby([select_col[0], select_col[1]]).sum().sort_values(by='date'))
-
-        fig = country_infections.groupby(
-            [select_col[0],
-             select_col[1]]).sum().sort_values(by=select_col[0]).head()
-
-        st.write(fig)
-
-        # x = []
-        y = country_infections[select_col[2]]
-        hd = "COVID-19 Spread tendency in " + country[0]
-        max_val = country_infections[select_col[2]].max()
-
-        generateTendencyGraph(y, hd, max_val)
-
-    except Exception as e:
-        st.write(e)
-        st.warning('Select the fields ')
-
-    pass
-
-
-# Predicción de mortalidad por COVID en un País
+# 5. Predicción de mortalidad por COVID en un País (ARRRRRREGLAR)
 def covidDeathPredictionByCountry(data: DataFrame):
 
     data_options = st.multiselect('Select fields', data.columns)
@@ -652,7 +423,7 @@ def covidDeathPredictionByCountry(data: DataFrame):
         st.warning('Please select a field')
 
 
-# Análisis del número de muertes por coronavirus en un País.
+# 6. Análisis del número de muertes por coronavirus en un País.
 def covidDeathsByCountry(data: DataFrame):
 
     data_options = st.multiselect(
@@ -671,19 +442,326 @@ def covidDeathsByCountry(data: DataFrame):
         st.subheader('Deaths analysis in {}'.format(country))
         st.write(data[[data_options[1], data_options[2]]])
 
-
         y = data[data_options[1]]
 
         generateTendencyGraph(y, 'Deaths in {}'.format(country), y.max())
-
-
 
     except Exception as e:
         st.write(e)
         st.warning("Please select a field")
 
 
-# Tendencia de casos confirmados de Coronavirus en un departamento de un País
+# 7. Tendencia del número de infectados por día de un País
+def covidInfectedByDay(data: DataFrame):
+
+    select_col = st.multiselect(
+        'Select a columns to parameterize (date, country and numeric variable): ',
+        data.columns)
+
+    #st.write(select_col)
+
+    try:
+        # select_date = st.selectbox('Select a date: ',
+        #                            data[select_col[0]].drop_duplicates())
+
+        select_country = st.selectbox('Select a country: ',
+                                      data[select_col[1]].drop_duplicates())
+
+        ## Filter data
+        country = [select_country]
+
+        country_infections = data[data[select_col[1]].isin(country)]  ##
+
+        ## sort
+        country_infections[select_col[0]] = pd.to_datetime(
+            country_infections[
+                select_col[0]])  #country_infections.sort_values(by='Date')
+        st.write(country_infections)
+
+        # group by and sum
+        #st.write(country_infections.groupby([select_col[0], select_col[1]]).sum().sort_values(by='date'))
+
+        fig = country_infections.groupby(
+            [select_col[0],
+             select_col[1]]).sum().sort_values(by=select_col[0]).head()
+
+        st.write(fig)
+
+        # x = []
+        y = country_infections[select_col[2]]
+        hd = "COVID-19 Spread tendency in " + country[0]
+        max_val = country_infections[select_col[2]].max()
+
+        generateTendencyGraph(y, hd, max_val)
+
+    except Exception as e:
+        st.write(e)
+        st.warning('Select the fields ')
+
+    pass
+
+
+# 8. Predicción de casos de un país para un año.
+def casesPredictionOneYear(data: DataFrame):
+
+    select_option = st.selectbox('Select a field to filter [country]: ',
+                                 data.columns)
+
+    country = st.selectbox('Select a country: ',
+                           data[select_option].drop_duplicates())
+
+    data = data[data[select_option].isin([country])]
+
+    var = st.selectbox('Select a variable to predict', data.columns)
+
+    has_date = st.checkbox('This file has "date" field')
+
+    if has_date:
+
+        date_ = st.selectbox('Order by: ', data.columns)
+
+        data[date_] = pd.to_datetime(data[date_])
+
+        flt = data[[date_, var]]
+        st.write(flt)
+        flt = data.sort_values(by=date_)
+
+        st.write(flt[[date_, var]])
+
+    else:
+
+        y = data[var]
+
+        days = st.slider('Select number of days to predict: ', 10, 1000)
+        grade = st.slider('Select polynomial grade: ', 0, 10)
+
+        st.write(y)
+        generatePredictionGraph(y, grade, days, y.max())
+
+        pass
+
+    #generatePredictionGraph(data[var],6, 365, 500000)
+
+
+# 9. Tendencia de la vacunación de en un País.
+def vaccinationTendencyByCountry(data: DataFrame):
+
+    data_options = st.multiselect(
+        'Select [date, country/region, and numeric variable]: ', data.columns)
+
+    try:
+
+        region = data_options[1]
+
+        country = st.selectbox('Select country: ',
+                               data[region].drop_duplicates())
+
+        data = data[data[region].isin([country])]
+
+        st.write(data)
+
+        vac = data[data_options[2]]
+
+        st.write(vac)
+
+        generateTendencyGraph(vac, "Vaccines trend graph", vac.max() + 500)
+
+        st.info("""Para poder comprender de mejor forma esta grafica,
+        es importante tomar en cuenta la pendiente generada, por ejemplo si la pendiente es creciente (positiva)
+        la tendencia de contagios en los dias siguientes al analisis será a la alta, pero si de lo contrario
+        la pendiente de la grafica es decreciente (negativa), la tendencia numero de contagios es a la baja.
+        """)
+    except Exception as e:
+        st.write(e)
+        st.warning(":c")
+
+
+# 10. Ánalisis Comparativo de Vacunación entre 2 paises.
+def vaccinationComparationByCountries(data: DataFrame):
+
+    try:
+
+        option = st.multiselect(
+            'Select field and variable of comparation [place, variable, group by] : ',
+            data.columns)
+
+        place = option[0]
+        variable = option[1]
+        col1, col2 = st.columns(2)
+
+        with col1:
+
+            st.subheader('Select Place 1:')
+            country1 = st.selectbox('Select country 1: ',
+                                    data[place].drop_duplicates())
+            p1 = data[data[place].isin([country1])]
+
+            #st.write(p1[variable])
+            t1 = p1[variable].sum()
+            generateTendencyGraph(p1[variable], 'Country1', p1[variable].max())
+
+        with col2:
+
+            st.subheader('Select Place 2:')
+            country2 = st.selectbox('Select country 2: ',
+                                    data[place].drop_duplicates())
+            p2 = data[data[place].isin([country2])]
+
+            #st.write(p2[variable])
+            t2 = p2[variable].sum()
+            generateTendencyGraph(p2[variable], 'Country2', p2[variable].max())
+
+        ## graph
+        plotdata = pd.DataFrame({str(variable): [t1, t2]},
+                                index=[country1, country2])
+
+        st.bar_chart(plotdata)
+        st.caption('Vaccination comparative graph')
+
+        ## Interpretación
+        if t1 > t2:
+            st.info(
+                'De acuerdo a la grafica, {} presenta una mejor tasa de vacunacion que {}'
+                .format(country1, country2))
+
+        # st.set_option('deprecation.showPyplotGlobalUse', False)
+        # plotdata.plot(kind="bar", color="green")
+        # plt.title("Comparative")
+        # st.pyplot()
+
+    except Exception as e:
+
+        st.write(e)
+        st.warning('Error :(')
+
+
+# 11. Porcentaje de hombres infectados por covid-19 en un País desde el primer caso activo
+
+
+# 12. Ánalisis Comparativo entres 2 o más paises o continentes.
+def covidComparative(data: DataFrame):
+
+    try:
+
+        option = st.multiselect(
+            'Select field and variable of comparation [place, variable, group by] : ',
+            data.columns)
+
+        place = option[0]
+        variable = option[1]
+
+        countries = st.multiselect('Select list of countries: ',
+                                   data[place].drop_duplicates())
+        st.write(countries)
+
+        elements = []
+        #size =
+        if countries.__len__() >= 2:
+
+            for i in range(0, countries.__len__()):
+                country = countries[i]
+                temp = data[data[place].isin([country])]
+                val = temp[variable].sum()
+                elements.append(val)
+
+            # Graph
+            plotdata = pd.DataFrame({
+                str(variable): elements,
+            },
+                                    index=[countries])
+
+            st.set_option('deprecation.showPyplotGlobalUse', False)
+            plotdata.plot(kind="bar", color="blue")
+            plt.title("Comparative")
+            st.pyplot()
+
+        else:
+            st.warning('Please, select more countries ')
+
+        # col1, col2 = st.columns(2)
+
+        # with col1:
+
+        #     st.subheader('Select Place 1:')
+        #     country1 = st.selectbox('Select country 1: ',
+        #                             data[place].drop_duplicates())
+        #     p1 = data[data[place].isin([country1])]
+
+        #     st.write(p1[variable].sum())
+        #     t1 = p1[variable].sum()
+
+        # with col2:
+
+        #     st.subheader('Select Place 2:')
+        #     country2 = st.selectbox('Select country 2: ',
+        #                             data[place].drop_duplicates())
+        #     p2 = data[data[place].isin([country2])]
+
+        #     st.write(p2[variable].sum())
+        #     t2 = p2[variable].sum()
+
+        # ## Graph
+        # plotdata = pd.DataFrame({
+        #     str(variable): [t1, t2],
+        # },
+        #                         index=[country1, country2])
+
+        # st.set_option('deprecation.showPyplotGlobalUse', False)
+        # plotdata.plot(kind="bar", color="green")
+        # plt.title("Comparative")
+        # st.pyplot()
+
+    except Exception as e:
+
+        st.write(e)
+        st.warning('Error :(')
+
+    # if option == 'Countries':
+
+    # elif option == 'Continents':
+
+    #     col1, col2 = st.columns(2)
+
+    #     with col1:
+    #         st.subheader('Select Continent 1:')
+    #         continent1 = st.selectbox('Select continent 1: ', data.columns)
+
+    #     with col2:
+    #         st.subheader('Select Continent 2:')
+    #         continent2 = st.selectbox('Select continent 2: ', data.columns)
+
+
+# 13. Muertes promedio por casos confirmados y edad de covid 19 en un País.
+
+
+# 14. Muertes según regiones de un país - Covid 19.
+def deathsByCountryRegions(data: DataFrame):
+
+    option_selected = st.multiselect('Select field to filter [country]: ',
+                                     data.columns)
+
+    try:
+
+        if option_selected.__len__() == 0:
+            st.warning('Please select a filter: ')
+
+        else:
+            flter = option_selected[0]
+
+            country = st.selectbox('Select country: ',
+                                   data[flter].drop_duplicates())
+
+            data = data[data[flter].isin([country])]
+            st.write(data)
+
+    except Exception as e:
+        st.write(e)
+        st.warning('Error :c')
+
+    pass
+
+
+# 15. Tendencia de casos confirmados de Coronavirus en un departamento de un País
 def covidCasesByDep(data: DataFrame):
 
     try:
@@ -727,7 +805,152 @@ def covidCasesByDep(data: DataFrame):
         st.warning('Select a field')
 
 
-# Comparación entre el número de casos detectados y el número de pruebas de un país.
+# 16. Porcentaje de muertes frente al total de casos en un país, región o continente
+def percentageDeathsCases(data: DataFrame):
+
+    try:
+
+        options = st.multiselect(
+            'Select filter [country, region or continent] and [death, cases]',
+            data.columns)
+
+        if options.__len__() >= 3:
+
+            st.write(options)
+            reg = options[0]
+            var1 = options[1]
+            var2 = options[2]
+
+            place = st.selectbox('Select place: ', data[reg].drop_duplicates())
+
+            data = data[data[reg].isin([place])]
+
+            # total deaths
+            t1 = data[var1].sum()
+            t2 = data[var2].sum()
+            st.subheader('total deaths in {}: {}'.format(place, t1))
+            st.subheader('total cases in {}: {}'.format(place, t2))
+            perc1 = (t1 / t2) * 100
+            perc2 = 100 - perc1
+            st.subheader('Percentege {}, {}'.format(perc1.__round__(2),
+                                                    perc2.__round__(2)))
+
+            df = {'Data': [perc1.__round__(2), perc2.__round__(2)]}
+            data[[var1, var2]]
+
+            st.subheader('Deaths percentage vs Positive cases')
+            fig = px.pie(df, values='Data', names='Data')
+            st.plotly_chart(fig, use_container_width=True)
+
+        else:
+            st.warning('Select more variables')
+
+    except Exception as e:
+        st.write(e)
+        st.write('Error :C')
+
+
+# 17. Tasa de comportamiento de casos activos en relación al número de muertes en un continente
+def performoranceRateCasesDeaths(data: DataFrame):
+
+    options = st.multiselect('Select filters: [place, date ,cases, deaths]',
+                             data.columns)
+    st.write(options)
+
+    place = options[0]
+    date_ = options[1]
+    cases = options[2]
+    deaths = options[3]
+
+    try:
+
+        continent = st.selectbox('Select continent: ',
+                                 data[place].drop_duplicates())
+
+        flt = data[data[place].isin([continent])]
+
+        flt[date_] = pd.to_datetime(flt[date_])
+        #flt[[date_, cases, deaths]]
+
+        st.line_chart(flt[[cases, deaths]])
+        st.caption('Cases / Deaths performance during the pandemic. ')
+        st.info(
+            'Esta grafica muestra el comportamiento de las muertes y los casos confirmados a lo largo de la pandemia en {}'
+            .format(place))
+
+        pass
+    except Exception as e:
+
+        st.write(e)
+        st.warning('Error :(')
+
+    pass
+
+
+# 18. Comportamiento y clasificación de personas infectadas por COVID-19 por municipio en un País.
+
+# 19. Predicción de muertes en el último día del primer año de infecciones en un país.
+
+# 20. Tasa de crecimiento de casos de COVID-19 en relación con nuevos casos diarios y tasa de muerte por COVID-19
+
+# 21. Predicciones de casos y muertes en todo el mundo - Neural Network MLPRegressor
+
+
+# 22. Tasa de mortalidad por coronavirus (COVID-19) en un país.
+def deathsRateByCountry(data: DataFrame):
+
+    option = st.selectbox('Select a field to filter [ex: country]',
+                          data.columns)
+
+    country = st.selectbox('Select country: ', data[option].drop_duplicates())
+
+    numeric_vars = st.multiselect(
+        'Select numeric varabales to analyze [ex: deaths, positives]: ',
+        data.columns)
+
+    if numeric_vars.__len__() == 2:
+
+        deaths = numeric_vars[0]
+        positives = numeric_vars[1]
+
+        data = data[data[option].isin([country])]
+
+        flt = data[[deaths, positives]].reset_index()
+        st.write(flt)
+
+        deathrate = []
+
+        for i in range(0, flt.__len__()):
+            # death_rate = (n1/n2) * 100
+            n1 = flt[deaths][i]  # deaths
+            n2 = flt[positives][i]  # positives
+
+            if n1 == 0 or n2 == 0:
+                deathrate.append(0)
+            else:
+                # st.write('xd')
+                death_rate = (n1 / n2) * 100
+                deathrate.append(death_rate)
+
+        #xd = pd.DataFrame(deathrate)
+        st.head
+        generateTendencyGraph(deathrate, "Death rate by country", 20)
+
+        # st.write(deathrate)
+        st.line_chart(deathrate)
+        #de(xd, 3, 20, 1000)
+
+        #st.write(deathrate)
+
+        pass
+
+    pass
+
+
+# 23. Factores de muerte por COVID-19 en un país.
+
+
+# 24. Comparación entre el número de casos detectados y el número de pruebas de un país.
 def covidCasesTestComparation(data: DataFrame):
 
     try:
@@ -771,7 +994,7 @@ def covidCasesTestComparation(data: DataFrame):
         st.warning('Error :(')
 
 
-# Predicción de casos confirmados por día
+# 25. Predicción de casos confirmados por día
 def covidCasesPredictionByDay(data: DataFrame):
 
     field = st.multiselect('Select filter, and order by: ', data.columns)
@@ -802,175 +1025,6 @@ def covidCasesPredictionByDay(data: DataFrame):
         st.warning('Error :(')
 
 
-# Tasa de comportamiento de casos activos en relación al número de muertes en un continente
-def performoranceRateCasesDeaths(data: DataFrame):
-
-    options = st.multiselect('Select filters: [place, date ,cases, deaths]',
-                             data.columns)
-    st.write(options)
-
-    place = options[0]
-    date_ = options[1]
-    cases = options[2]
-    deaths = options[3]
-
-    try:
-
-        continent = st.selectbox('Select continent: ',
-                                 data[place].drop_duplicates())
-
-        flt = data[data[place].isin([continent])]
-
-        flt[date_] = pd.to_datetime(flt[date_])
-        #flt[[date_, cases, deaths]]
-
-        st.line_chart(flt[[cases, deaths]])
-        st.caption('Cases / Deaths performance during the pandemic. ')
-        st.info(
-            'Esta grafica muestra el comportamiento de las muertes y los casos confirmados a lo largo de la pandemia en {}'
-            .format(place))
-
-        pass
-    except Exception as e:
-
-        st.write(e)
-        st.warning('Error :(')
-
-    pass
-
-
-# Porcentaje de muertes frente al total de casos en un país, región o continente
-def percentageDeathsCases(data: DataFrame):
-
-    try:
-
-        options = st.multiselect(
-            'Select filter [country, region or continent] and [death, cases]',
-            data.columns)
-
-        st.write(options)
-        reg = options[0]
-        var1 = options[1]
-        var2 = options[2]
-
-        place = st.selectbox('Select place: ', data[reg].drop_duplicates())
-
-        data = data[data[reg].isin([place])]
-
-        # total deaths
-        t1 = data[var1].sum()
-        t2 = data[var2].sum()
-        st.subheader('total deaths {}'.format(t1))
-        st.subheader('total cases {}'.format(t2))
-        perc1 = (t1 / t2) * 100
-        perc2 = 100 - perc1
-        st.subheader('Percentege {}, {}'.format(perc1.__round__(2),
-                                                perc2.__round__(2)))
-
-        df = {'Data': [perc1.__round__(2), perc2.__round__(2)]}
-        data[[var1, var2]]
-
-        st.subheader('Deaths percentage vs Positive cases')
-        fig = px.pie(df, values='Data', names='Data')
-        st.plotly_chart(fig, use_container_width=True)
-
-    except Exception as e:
-        st.write(e)
-        st.write('Error :C')
-
-
-# Tasa de mortalidad por coronavirus (COVID-19) en un país.
-def deathsRateByCountry(data: DataFrame):
-
-    option = st.selectbox('Select a field to filter [ex: country]',
-                          data.columns)
-
-    country = st.selectbox('Select country: ', data[option].drop_duplicates())
-
-    numeric_vars = st.multiselect(
-        'Select numeric varabales to analyze [ex: deaths, positives]: ',
-        data.columns)
-
-    if numeric_vars.__len__() == 2:
-
-        deaths = numeric_vars[0]
-        positives = numeric_vars[1]
-
-        data = data[data[option].isin([country])]
-
-        flt = data[[deaths, positives]]
-        st.write(flt)
-
-        deathrate = []
-
-        for i in range(0, flt.__len__()):
-            # death_rate = (n1/n2) * 100
-            n1 = flt[deaths][i]  # deaths
-            n2 = flt[positives][i]  # positives
-            
-            if n1 == 0 or n2 == 0:
-                deathrate.append(0)
-            else:
-                # st.write('xd')
-                death_rate = (n1 / n2) * 100
-                deathrate.append(death_rate)
-
-        xd = pd.DataFrame(deathrate)
-        generateTendencyGraph(deathrate, "Death rate by country", 20)
-        
-        # st.write(deathrate)
-        st.line_chart(deathrate)
-        #de(xd, 3, 20, 1000)
-
-        #st.write(deathrate)
-
-        pass
-
-    pass
-
-
-# Predicción de casos de un país para un año.
-def casesPredictionOneYear(data: DataFrame):
-
-    select_option = st.selectbox('Select a field to filter [country]: ',
-                                 data.columns)
-
-    country = st.selectbox('Select a country: ',
-                           data[select_option].drop_duplicates())
-
-    data = data[data[select_option].isin([country])]
-
-    var = st.selectbox('Select a variable to predict', data.columns)
-
-    has_date = st.checkbox('This file has "date" field')
-
-    if has_date:
-
-        date_ = st.selectbox('Order by: ', data.columns)
-
-        data[date_] = pd.to_datetime(data[date_])
-
-        flt = data[[date_, var]]
-        st.write(flt)
-        flt = data.sort_values(by=date_)
-
-        st.write(flt[[date_, var]])
-
-    else:
-
-        y = data[var]
-
-        days = st.slider('Select number of days to predict: ', 10, 1000)
-        grade = st.slider('Select polynomial grade: ', 0, 10)
-
-        st.write(y)
-        generatePredictionGraph(y, grade, days, y.max())
-
-        pass
-
-    #generatePredictionGraph(data[var],6, 365, 500000)
-
-
 # ===================== END METHODS =====================
 
 # Sidebar option tuple
@@ -983,7 +1037,8 @@ covid_deaths_tuple = (
     'Predicción de mortalidad por COVID en un Departamento.',
     'Predicción de mortalidad por COVID en un País',
     'Porcentaje de muertes frente al total de casos en un país, región o continente',
-    'Tasa de mortalidad por coronavirus (COVID-19) en un país.')
+    'Tasa de mortalidad por coronavirus (COVID-19) en un país.',
+    'Muertes según regiones de un país - Covid 19.')
 # Covid Cases
 covid_cases_tuple = (
     'Tendencia de la infección por Covid-19 en un País.',
@@ -1087,6 +1142,9 @@ if upload_file is not None:
 
         elif select_report == 'Tasa de mortalidad por coronavirus (COVID-19) en un país.':
             deathsRateByCountry(data)
+
+        elif select_report == 'Muertes según regiones de un país - Covid 19.':
+            deathsByCountryRegions(data)
 
     elif sidebar_selectbox == 'Vaccines':
         st.header('COVID Vaccines Reports')
