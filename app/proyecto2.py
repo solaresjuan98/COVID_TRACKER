@@ -660,7 +660,7 @@ def covidDeathsByCountry(data: DataFrame):
         data.columns)
 
     try:
-
+        # IMPORTANTE REVISAR AQUI XD
         country = st.selectbox('Select country',
                                data[data_options[0]].drop_duplicates())
 
@@ -905,18 +905,22 @@ def deathsRateByCountry(data: DataFrame):
 
         for i in range(0, flt.__len__()):
             # death_rate = (n1/n2) * 100
-            n1 = flt[deaths][1]  # deaths
-            n2 = flt[positives][1]  # positives
-
-            if n1 == 0 and n2 == 0:
+            n1 = flt[deaths][i]  # deaths
+            n2 = flt[positives][i]  # positives
+            
+            if n1 == 0 or n2 == 0:
                 deathrate.append(0)
             else:
+                # st.write('xd')
                 death_rate = (n1 / n2) * 100
-                deathrate.append(deathrate)
+                deathrate.append(death_rate)
 
         xd = pd.DataFrame(deathrate)
-        #generateTendencyGraph(deathrate, "Death rate by country", 20)
-        #generatePredictionGraph(xd, 3, 20, 1000)
+        generateTendencyGraph(deathrate, "Death rate by country", 20)
+        
+        # st.write(deathrate)
+        st.line_chart(deathrate)
+        #de(xd, 3, 20, 1000)
 
         #st.write(deathrate)
 
