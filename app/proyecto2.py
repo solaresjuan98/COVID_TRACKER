@@ -124,7 +124,7 @@ def generateTendencyGraph(y, header, maxY):
 
     plt.scatter(X, y, color='black')
     plt.plot(X, y_pred, color='blue', linewidth=3)
-
+    plt.savefig('D:\\trend.jpg')
     #print(reg.predict([[10]]))
     max_val = maxY
 
@@ -136,6 +136,44 @@ def generateTendencyGraph(y, header, maxY):
     st.pyplot()
     st.set_option('deprecation.showPyplotGlobalUse', False)
     st.caption('COVID-19 tendence graph')
+    
+    
+    
+    export_as_pdf = st.button("Export Report")
+
+    if export_as_pdf:
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_xy(0, 0)
+        pdf.set_font('arial', 'B', 12)
+        pdf.cell(60)
+        pdf.cell(75, 10, 'pdf_title', 0, 2, 'C')
+        pdf.cell(90, 10, " ", 0, 2, 'C')
+        pdf.cell(-40)
+        # pdf.cell(50, 10, 'X', 1, 0, 'C')
+        # pdf.cell(40, 10, variable[0], 1, 0, 'C')
+        # pdf.cell(40, 10, '', 1, 2, 'C')
+        # pdf.cell(-90)
+        # pdf.set_font('arial', '', 12)
+        # for i in range(0, len(flt)):
+        #     pdf.cell(50, 10, '%s' % (flt[variable[1]].iloc[i]),
+        #              1, 0, 'C')
+        #     pdf.cell(40, 10,
+        #              '%s' % (str(flt[variable[0]].iloc[i])), 1,
+        #              0, 'C')
+        #     pdf.cell(40, 10,
+        #              '%s' % (str(flt.positive.iloc[i])), 1, 2,
+        #              'C')
+        #     pdf.cell(-90)
+        # pdf.cell(90, 10, " ", 0, 2, 'C')
+
+        pdf.image('D:\\trend.jpg')
+        html = create_download_link(
+            pdf.output(dest="S").encode("latin-1"), "test")
+
+        st.markdown(html, unsafe_allow_html=True)
+    
+    
     # st.info("""Para poder comprender de mejor forma esta grafica,
     # es importante tomar en cuenta la pendiente generada, por ejemplo si la pendiente es creciente (positiva)
     # la tendencia de contagios en los dias siguientes al analisis será a la alta, pero si de lo contrario
@@ -215,46 +253,7 @@ def covidInfectionTendence(data: DataFrame):
 
                     ### PDF
                     pdf_title = 'Tendencia de la infección por Covid-19 en un País. \n\n'
-
-                    # contenido = """Esta grafica muestra la tendencia de indice de contagios que tiene {} \n 
-                    #     en un periodo de {} días. Una pendiente positiva indica que la cantidad de casos irán \n 
-                    #     aumentando con el paso del tiempo, y una pendiente \n
-                    #     negativa indica que los casos irán decreciendo con el paso del tiempo. \n""".format(
-                    #     country[0], flt.__len__())
-                    #report_text2 = st.text_input("Content")
-                    export_as_pdf = st.button("Export Report")
-
-                    if export_as_pdf:
-                        pdf = FPDF()
-                        pdf.add_page()
-                        pdf.set_xy(0, 0)
-                        pdf.set_font('arial', 'B', 12)
-                        pdf.cell(60)
-                        pdf.cell(75, 10, pdf_title, 0, 2, 'C')
-                        pdf.cell(90, 10, " ", 0, 2, 'C')
-                        pdf.cell(-40)
-                        pdf.cell(50, 10, variable[1], 1, 0, 'C')
-                        pdf.cell(40, 10, variable[0], 1, 0, 'C')
-                        pdf.cell(40, 10, '', 1, 2, 'C')
-                        pdf.cell(-90)
-                        pdf.set_font('arial', '', 12)
-                        for i in range(0, len(flt)):
-                            pdf.cell(50, 10, '%s' % (flt[variable[1]].iloc[i]),
-                                     1, 0, 'C')
-                            pdf.cell(40, 10,
-                                     '%s' % (str(flt[variable[0]].iloc[i])), 1,
-                                     0, 'C')
-                            pdf.cell(40, 10,
-                                     '%s' % (str(flt.positive.iloc[i])), 1, 2,
-                                     'C')
-                            pdf.cell(-90)
-                        pdf.cell(90, 10, " ", 0, 2, 'C')
-
-                        pdf.image('hola.jpg')
-                        html = create_download_link(
-                            pdf.output(dest="S").encode("latin-1"), "test")
-
-                        st.markdown(html, unsafe_allow_html=True)
+                    
 
             else:
                 variable = st.selectbox('Select variable to analyze: ',
