@@ -1,3 +1,4 @@
+import base64
 import datetime as dt
 import io
 import time
@@ -12,6 +13,7 @@ import plotly.figure_factory as ff
 import seaborn as sns
 import streamlit as st
 from attr import field
+from fpdf import FPDF
 from matplotlib import colors
 from pandas._config.config import options
 from pandas.core import groupby
@@ -141,7 +143,16 @@ def generateTendencyGraph(y, header, maxY):
     # """)
 
 
-# ===================== METHODS =====================
+def create_download_link(val, filename):
+    b64 = base64.b64encode(val)  # val looks like b'...'
+    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}.pdf">Download file</a>'
+
+
+def write_pdf():
+    pass
+
+
+# ===================== REPORTS =====================
 
 
 # 1. Tendencia de la infección por Covid-19 en un País.
@@ -171,7 +182,7 @@ def covidInfectionTendence(data: DataFrame):
                     'Select variables to analize [date, numeric]: ',
                     data.columns)
 
-                if variable.__len__() == 0:
+                if variable.__len__() < 2:
                     st.warning('Please select variables to analize')
 
                 else:
@@ -201,6 +212,50 @@ def covidInfectionTendence(data: DataFrame):
                         Una pendiente positiva indica que la cantidad de casos irán aumentando con el paso del tiempo, y una pendiente 
                         negativa indica que los casos irán decreciendo con el paso del tiempo. """
                         .format(country[0], flt.__len__()))
+
+                    ### PDF
+                    pdf_title = 'Tendencia de la infección por Covid-19 en un País. \n\n'
+
+                    # contenido = """Esta grafica muestra la tendencia de indice de contagios que tiene {} \n 
+                    #     en un periodo de {} días. Una pendiente positiva indica que la cantidad de casos irán \n 
+                    #     aumentando con el paso del tiempo, y una pendiente \n
+                    #     negativa indica que los casos irán decreciendo con el paso del tiempo. \n""".format(
+                    #     country[0], flt.__len__())
+                    #report_text2 = st.text_input("Content")
+                    export_as_pdf = st.button("Export Report")
+
+                    if export_as_pdf:
+                        pdf = FPDF()
+                        pdf.add_page()
+                        pdf.set_xy(0, 0)
+                        pdf.set_font('arial', 'B', 12)
+                        pdf.cell(60)
+                        pdf.cell(75, 10, pdf_title, 0, 2, 'C')
+                        pdf.cell(90, 10, " ", 0, 2, 'C')
+                        pdf.cell(-40)
+                        pdf.cell(50, 10, variable[1], 1, 0, 'C')
+                        pdf.cell(40, 10, variable[0], 1, 0, 'C')
+                        pdf.cell(40, 10, '', 1, 2, 'C')
+                        pdf.cell(-90)
+                        pdf.set_font('arial', '', 12)
+                        for i in range(0, len(flt)):
+                            pdf.cell(50, 10, '%s' % (flt[variable[1]].iloc[i]),
+                                     1, 0, 'C')
+                            pdf.cell(40, 10,
+                                     '%s' % (str(flt[variable[0]].iloc[i])), 1,
+                                     0, 'C')
+                            pdf.cell(40, 10,
+                                     '%s' % (str(flt.positive.iloc[i])), 1, 2,
+                                     'C')
+                            pdf.cell(-90)
+                        pdf.cell(90, 10, " ", 0, 2, 'C')
+
+                        pdf.image('hola.jpg')
+                        html = create_download_link(
+                            pdf.output(dest="S").encode("latin-1"), "test")
+
+                        st.markdown(html, unsafe_allow_html=True)
+
             else:
                 variable = st.selectbox('Select variable to analyze: ',
                                         data.columns)
@@ -1331,7 +1386,6 @@ def covidCasesPredictionByDay(data: DataFrame):
             n_days = st.slider('Select number of days to predict ', 10, 1000)
             grade = st.slider('Select polynomial grade ', 1, 10)
             #y = data[flter]
-            
 
             st.spinner()
             with st.spinner(text="Generating prediction..."):
@@ -1459,6 +1513,20 @@ if upload_file is not None:
 
         elif select_report == 'Comportamiento y clasificación de personas infectadas por COVID-19 por municipio en un País.':
             classificationInfectedPeopleByState(data)
+
+        #report_text2 = st.text_input("Content")
+        # export_as_pdf = st.button("Export Report")
+
+        # if export_as_pdf:
+        #     pdf = FPDF()
+        #     pdf.add_page()
+        #     pdf.set_font('Arial', 'B', 16)
+        #     pdf.cell(40, 10, report_text)
+        #     pdf.cell(40, 10, '\n\n\n')
+
+        #     html = create_download_link(pdf.output(dest="S").encode("latin-1"), "test")
+
+        #     st.markdown(html, unsafe_allow_html=True)
 
     elif sidebar_selectbox == 'COVID Deaths':
 
