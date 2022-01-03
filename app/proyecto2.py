@@ -1,22 +1,23 @@
 import datetime as dt
 import io
+import time
 from math import e
-from attr import field
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from pandas.core.reshape.pivot import pivot_table
 import plotly
 import plotly.express as px
 import plotly.figure_factory as ff
 import seaborn as sns
 import streamlit as st
+from attr import field
 from matplotlib import colors
 from pandas._config.config import options
 from pandas.core import groupby
 from pandas.core.algorithms import mode
 from pandas.core.frame import DataFrame
+from pandas.core.reshape.pivot import pivot_table
 from PIL import Image
 from sklearn import linear_model
 from sklearn.linear_model import LinearRegression
@@ -288,7 +289,9 @@ def pandemicProgression(data: DataFrame):
 
         data = data[[date_, cases]]
 
+        # data['fecha'] = pd.to_datetime(data['fecha'])
         data[date_] = pd.to_datetime(data[date_])
+        # data = data.sort_values(by='fecha')
         data = data.sort_values(by=date_)
         data = data.groupby(date_)[cases].sum()
         st.write(data)
@@ -529,26 +532,33 @@ def vaccinationTendencyByCountry(data: DataFrame):
 
     try:
 
-        region = data_options[1]
+        if data_options.__len__() == 0:
+            st.warning('Please select fields to filter')
+        else:
+            region = data_options[1]
 
-        country = st.selectbox('Select country: ',
-                               data[region].drop_duplicates())
+            country = st.selectbox('Select country: ',
+                                   data[region].drop_duplicates())
 
-        data = data[data[region].isin([country])]
+            # pais = 'Guatemala'
+            # data = data[data[region].isin(['Guatemala'])]
 
-        st.write(data)
+            data = data[data[region].isin([country])]
 
-        vac = data[data_options[2]]
+            st.write(data)
 
-        st.write(vac)
+            vac = data[data_options[2]]
 
-        generateTendencyGraph(vac, "Vaccines trend graph", vac.max() + 500)
+            st.write(vac)
 
-        st.info("""Para poder comprender de mejor forma esta grafica,
-        es importante tomar en cuenta la pendiente generada, por ejemplo si la pendiente es creciente (positiva)
-        la tendencia de contagios en los dias siguientes al analisis será a la alta, pero si de lo contrario
-        la pendiente de la grafica es decreciente (negativa), la tendencia numero de contagios es a la baja.
-        """)
+            generateTendencyGraph(vac, "Vaccines trend graph", vac.max() + 500)
+
+            st.info("""Para poder comprender de mejor forma esta grafica,
+            es importante tomar en cuenta la pendiente generada, por ejemplo si la pendiente es creciente (positiva)
+            la tendencia de contagios en los dias siguientes al analisis será a la alta, pero si de lo contrario
+            la pendiente de la grafica es decreciente (negativa), la tendencia numero de contagios es a la baja.
+            """)
+
     except Exception as e:
         st.write(e)
         st.warning(":c")
@@ -614,6 +624,69 @@ def vaccinationComparationByCountries(data: DataFrame):
 
 
 # 11. Porcentaje de hombres infectados por covid-19 en un País desde el primer caso activo
+def menPercentageInfected(data: DataFrame):
+
+    field = st.selectbox('Select field to filter: ', data.columns)
+
+    try:
+
+        country = st.selectbox('Select country: ',
+                               data[field].drop_duplicates())
+
+        data = data[data[field].isin([country])]
+
+        gender = st.multiselect('Select variables to analize [men, women]: ',
+                                data.columns)
+
+        if gender.__len__() == 0:
+            st.warning('Select fields to compare. ')
+
+        else:
+
+            gender1 = gender[0]
+            gender2 = gender[1]
+
+            #data[[gender1, gender2]]
+            t1 = data[gender1].sum()
+            t2 = data[gender2].sum()
+
+            data
+
+            st.write("--" * 100)
+
+            st.subheader('Total infected: {}'.format(t1 + t2))
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                per1 = (t1 / (t1 + t2)) * 100
+                st.subheader('Total of {} infected: {} '.format(gender1, t1))
+                st.subheader('* {}%'.format(per1.__round__(3)))
+
+            with col2:
+                per2 = (t2 / (t1 + t2)) * 100
+                st.subheader('Total of {} infected: {} '.format(gender2, t2))
+                st.subheader('* {}%'.format(per2.__round__(3)))
+
+            # data
+            st.spinner()
+            with st.spinner(text='Loading charts'):
+                time.sleep(3)
+                df = {'Data': [per1.__round__(3), per2.__round__(3)]}
+                st.subheader('Men % infected since the first day ')
+                fig = px.pie(df, values='Data', names='Data')
+                st.plotly_chart(fig, use_container_width=True)
+                st.caption('Men % infected since the first day ')
+                st.info(
+                    'Esta gracia muestra el porcentaje de hombres infectados frente al total de personas infectadas desde el primer caso de COVID 19 detectado, actualizado a los datos del ultimo dia que contiene el archivo. '
+                )
+
+                #st.line_chart(data[[gender1, gender2]])
+                #st.success('Done')
+    except Exception as e:
+        st.write(e)
+        st.warning('Error :c')
+    pass
 
 
 # 12. Ánalisis Comparativo entres 2 o más paises o continentes.
@@ -866,10 +939,117 @@ def performoranceRateCasesDeaths(data: DataFrame):
 
 
 # 18. Comportamiento y clasificación de personas infectadas por COVID-19 por municipio en un País.
+def classificationInfectedPeopleByState(data: DataFrame):
+
+    select_field = st.selectbox('Select a field to filter: ', data.columns)
+
+    try:
+
+        country = st.selectbox('Select country',
+                               data[select_field].drop_duplicates())
+
+        #data = data[data[select_field].isin([country])]
+
+        country_filter = st.selectbox(
+            'Filter country by region/state/province/deparment', data.columns)
+
+        data = data[data[select_field].isin([country])]
+
+        state = st.selectbox('Select state/province/department: ',
+                             data[country_filter].drop_duplicates())
+
+        data = data[data[country_filter].isin([state])]
+
+        #data
+        filters = st.multiselect('Select variables to filter: ', data.columns)
+
+        if filters.__len__() < 2:
+            st.warning('Please select more variables to filter')
+
+        else:
+            var1 = filters[0]
+            var2 = filters[1]
+
+            has_date = st.checkbox('This file has "date" column ')
+
+            if has_date:
+
+                date_field = st.selectbox('Select date type field', data.columns)
+
+                data[date_field] = pd.to_datetime(data[date_field])
+                data = data.sort_values(by=date_field).reset_index()
+
+                st.subheader('Data classifications')
+                st.dataframe(data[[date_field, var1, var2]])
+
+                ## AQUI ME QUEDE xd
+                ## columns
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    ## st.subheader('xd1')
+                    
+                    st.spinner()
+                    with st.spinner(text='In progress'):
+                        time.sleep(3)
+                        st.set_option('deprecation.showPyplotGlobalUse', False)
+                        generateTendencyGraph(data[var1], '{} trend graphic in {}'.format(var1, state), data[var1].max())
+
+                with col2:
+                    ## st.subheader('xd2')
+                    with st.spinner(text='In progress'):
+                        time.sleep(3)
+                        st.set_option('deprecation.showPyplotGlobalUse', False)
+                        generateTendencyGraph(data[var2], '{} trend graphic in {}'.format(var2, state), data[var2].max())
+
+            else:
+                pass
+
+        #data[[var1, var2]]
+
+    except Exception as e:
+        st.write(e)
+        st.warning('Error :c')
+
+    pass
+
 
 # 19. Predicción de muertes en el último día del primer año de infecciones en un país.
 
+
 # 20. Tasa de crecimiento de casos de COVID-19 en relación con nuevos casos diarios y tasa de muerte por COVID-19
+def growthRateCasesAndDeathRate(data: DataFrame):
+
+    try:
+
+        selected_options = st.multiselect(
+            'Select variables to analize: [positives, deaths]', data.columns)
+
+        if selected_options.__len__() == 0:
+            st.warning('Please select more fields')
+        else:
+            var1 = selected_options[0]
+            var2 = selected_options[1]
+
+            has_date = st.checkbox('This file has Data type field ')
+
+            if has_date:
+                date_field = st.selectbox('Select date type field',
+                                          data.columns)
+
+                data[date_field] = pd.to_datetime(data[date_field])
+                data = data.sort_values(by=date_field).reset_index()
+                st.dataframe(data[[date_field, var1, var2]])
+
+                # Tasa de crecimiento de casos de COVID-19 en relación con nuevos casos diarios
+                # tasa de muerte por COVID-19
+            else:
+                pass
+
+    except Exception as e:
+        st.write(e)
+        st.warning('Error :(')
+
 
 # 21. Predicciones de casos y muertes en todo el mundo - Neural Network MLPRegressor
 
@@ -1028,7 +1208,11 @@ covid_cases_tuple = (
     'Comparación entre el número de casos detectados y el número de pruebas de un país.',
     'Predicción de casos confirmados por día',
     'Tasa de comportamiento de casos activos en relación al número de muertes en un continente',
-    'Predicción de casos de un país para un año.')
+    'Predicción de casos de un país para un año.',
+    'Porcentaje de hombres infectados por covid-19 en un País desde el primer caso activo',
+    'Tasa de crecimiento de casos de COVID-19 en relación con nuevos casos diarios y tasa de muerte por COVID-19',
+    'Comportamiento y clasificación de personas infectadas por COVID-19 por municipio en un País.'
+)
 
 # Covid Vaccines
 covid_vaccines_tuple = ('Tendencia de la vacunación de en un País.',
@@ -1103,6 +1287,17 @@ if upload_file is not None:
         elif select_report == 'Predicción de casos de un país para un año.':
 
             casesPredictionOneYear(data)
+
+        elif select_report == 'Porcentaje de hombres infectados por covid-19 en un País desde el primer caso activo':
+
+            menPercentageInfected(data)
+
+        elif select_report == 'Tasa de crecimiento de casos de COVID-19 en relación con nuevos casos diarios y tasa de muerte por COVID-19':
+
+            growthRateCasesAndDeathRate(data)
+
+        elif select_report == 'Comportamiento y clasificación de personas infectadas por COVID-19 por municipio en un País.':
+            classificationInfectedPeopleByState(data)
 
     elif sidebar_selectbox == 'COVID Deaths':
 
