@@ -15,12 +15,16 @@ CARNET 201800496
 
 :green_book:[Descripción del problema](#tag1)
 
-:green_book:[Sidebar](#tag2)
+:green_book:[Solucion](#tag2)
 
-:green_book:[Reportes](#tag3)
+:green_book:[Flujo de la aplicación](#tag2)
+
+:green_book:[Generar predicciones en Python](#tag3)
+
+:green_book:[Generar tendencias en Python](#tag4)
 
 ## Descripción del problema
-
+## :beginner: Descripción del problema<a name="tag1"></a>
 La pandemia del COVID-19 sin duda alguna ha causado un cambio significativo en la vida de todas las personas **alrededor** del mundo debido a los cambios drásticos que vinieron junto a está pandemia.
 
 Debido a esto, desde el año 2020, han ocurrido muchos sucesos relacionados a la pandemia que han afectado l
@@ -28,7 +32,8 @@ Debido a esto, desde el año 2020, han ocurrido muchos sucesos relacionados a la
 A lo largo del tiempo, gracias a los avances tecnologicos se ha podido recabar una gran cantidad de datos y estadisticas  los cuales son muy necesarios para poder tomar decisiones para poder contener el avance de la pandemia y poder responder de la mejor forma para evitar muchos contagios.
 
 
-## Solución
+## Solucion
+## :beginner: Solucion <a name="tag1"></a>
 La solución propuesta es realizar una aplicacíón web en la cual se puedan analizar datos estadisticos de la pandemia a lo largo del tiempo, utilizando Ciencia de Datos. La Ciancia de Datos es una campo interdisciplinario que incolucra metodos cientificos, procesos y sistemas para poder extraer datos y conocimientos para poder tomar decisiones.
 
 ![1](./img/holaaaa.jpg)
@@ -45,7 +50,34 @@ La regresión lineal es una técnica de modelado estadístico que se emplea para
 ![1](./img/regr.png)
 
 ## Flujo de la aplicación
+## :beginner: Flujo de la aplicación<a name="tag1"></a>
+El flujo de funcionamiento de la aplicación es el siguiente: 
 
+1. Se carga el archivo de entrada en cualquier formato.
+
+![1](./img/flujo1.png)
+
+2. Se muestran los datos del archivo cargados en la interfaz
+
+![1](./img/grafica2.png)
+
+3. Se parametrizan los campos de del dataframe, para que posteriormente pueda realizar el analisis de los datos obtenidos, como predicciones y graficos de tendencia
+
+![1](./img/parametrizacion.png)
+
+
+4. Luego de haber preparado y filtrado las columnas del datraframe se procede a generar la grafica de acuerdo a los campos y condiciones dadas.
+
+![1](./img/flujo4.png)
+
+5. La aplicación cuenta con una opción para generar la predicción y grafico de tendencia, en formato PDF.
+
+![1](./img/download.png)
+
+
+6. Una vez descargado el reporte PDF, se procede a visualizarlo en el navegador
+   
+![1](./img/reporte.png).
 
 
 ## Importar las librerias usadas
@@ -81,11 +113,8 @@ from sklearn.preprocessing import PolynomialFeatures
 from streamlit.elements.arrow import Data
 ```
 
-## GENERAR TENDENCIA 
-
-
 ## Generar predicciones en Python
-
+## :beginner: Generar predicciones en Python<a name="tag1"></a>
 ```python
 
 def generatePredictionGraph(y: DataFrame, grade, days, max_val):
@@ -162,6 +191,7 @@ def generatePredictionGraph(y: DataFrame, grade, days, max_val):
 ```
 
 ## Generar tendencias en Python
+## :beginner: Generar tendencias en Python<a name="tag1"></a>
 ```python
 
 
