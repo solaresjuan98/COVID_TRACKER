@@ -244,9 +244,9 @@ def covidInfectionTendence(data: DataFrame):
                                      variable[1]]).sum().reset_index())
 
                     # Tendency
-                    generateTendencyGraph(flt[variable[1]],
+                    generateTendencyGraph(flt[variable[1]].fillna(0),
                                           "Tendency COVID spread by country",
-                                          flt[variable[1]].max())
+                                          flt[variable[1]].fillna(0).max())
 
                     st.subheader('Intepretación: ')
                     st.info(
@@ -314,12 +314,15 @@ def covidInfectedPredictionByCountry(data: DataFrame):
                 grade = st.slider('Select a polynomial grade prediction: ', 1,
                                   5)
                 # print(y)
-                generatePredictionGraph(y, grade, days, y.max())
+                generatePredictionGraph(y.fillna(0), grade, days, y.fillna(0).max())
 
+                global prediccion
                 interpretacion = """
                 La gráfica muestra una predicción de personas infectadas en {} en un periodo de {} días, y la predicción está siendo representada por medio de un polinomio
                 de grado {}. (Es importante tomar en cuenta que entre mayor sea el grado de un polinomio mucho más precisa será la predicción obtenida).
-                """.format(c, days, grade)
+
+                La predicción de nuevas infecciones en {} será de {} para el periodo seleccionado.
+                """.format(c[0], days, grade, c[0], int(prediccion))
 
                 st.info(interpretacion)
 
@@ -400,8 +403,8 @@ def pandemicProgression(data: DataFrame):
         Esta grafica representa el progreso de infecciones que ha habido desde el inicio de la pandemia en todo el mundo
         """)
 
-        generateTendencyGraph(data, 'Pandemic progression regression',
-                              data.max())
+        generateTendencyGraph(data.fillna(0), 'Pandemic progression regression',
+                              data.fillna(0).max())
 
         interpretacion = """
         La grafica de tendencia representa el comportamiento que tendrá la variable estudiada "{}" a lo largo del tiempo, y la pendiente indica 
@@ -460,16 +463,19 @@ def covidDeathsPredictionByDeparment(data: DataFrame):
             y = dep[cases]
 
             # slider
-            n_days = st.slider('Select number of days to predict: ', 5, 100)
-            grade = st.slider('Select grade of the regression: ', 1, 3)
-            max_val = dep[cases].max()
+            n_days = st.slider('Select number of days to predict: ', 5, 1000)
+            grade = st.slider('Select grade of the polynomial: ', 1, 10)
+            max_val = dep[cases].fillna(0).max()
 
-            generatePredictionGraph(y, grade, n_days, max_val)
+            generatePredictionGraph(y.fillna(0), grade, n_days, max_val)
 
+            global prediccion
             interpretacion = """
             La gráfica de predicción nos indica el posible valor de la variable "{}" en un periodo de {} días, 
             representado con un polinomio de grado {}.
-            """.format(cases, n_days, grade)
+
+            La prediccion de mortalidad será de {} personas para el periodo seleccionado.
+            """.format(cases, n_days, grade, int(prediccion))
 
             st.info(interpretacion)
 
@@ -529,7 +535,7 @@ def covidDeathPredictionByCountry(data: DataFrame):
                                   10)
 
                 generatePredictionGraph(data[fltr], grade, n_days,
-                                        data[fltr].max())
+                                        data[fltr].fillna(0).max())
 
                 export_as_pdf = st.button("Export Report")
                 pdf_title = '5. Predicción de mortalidad por COVID en un País '
@@ -539,7 +545,7 @@ def covidDeathPredictionByCountry(data: DataFrame):
                 La prediccion de numero de muertes en globalmente en un numero de {} días representado con un polnomio de  grado {}
                 sera de {} personas, de acuerdo al dataset que se tiene.
                 """.format(n_days, grade, int(prediccion))
-
+                st.info(interpretacion)
                 if export_as_pdf:
                     write_pdf(pdf_title, interpretacion, 'prediction.png')
             else:
