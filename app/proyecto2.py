@@ -100,7 +100,7 @@ def generatePredictionGraph(y: DataFrame, grade, days, max_val):
     plt.xlabel('x')
     plt.ylabel('y')
 
-    plt.savefig('D:\\prediction.png')
+    plt.savefig('prediction.png')
     #plt.savefig('pol_reg.jpg', )
     plt.show()
     st.pyplot()
@@ -322,7 +322,7 @@ def covidInfectedPredictionByCountry(data: DataFrame):
                 #content = ""
 
                 if export_as_pdf:
-                    write_pdf(pdf_title, interpretacion, 'D:\\prediction.png')
+                    write_pdf(pdf_title, interpretacion, 'prediction.png')
                 pass
 
         else:
@@ -1804,6 +1804,9 @@ st.sidebar.header("Load a file: ")
 # add selectbox to the sidebar
 sidebar_selectbox = st.sidebar.selectbox('Select Type...', sid_opt_tuple)
 
+# select type of file 
+select_report = st.sidebar.selectbox('Select a tye of file', ('json', 'csv', 'xlsx'))
+
 # file uploader
 upload_file = st.sidebar.file_uploader("Choose a .csv, .xls or .json file")
 
@@ -1820,14 +1823,16 @@ image2 = st.image(
 
 if upload_file is not None:
 
-    data = pd.read_csv(upload_file)
+    st.write(select_report)
 
+    data = pd.read_csv(upload_file)
+    
     # Validate area of analysis
     if sidebar_selectbox == 'COVID Cases':
         st.header('COVID Spread/Cases Reports ')
 
         select_report = st.selectbox('Select report', covid_cases_tuple)
-
+        data.replace(np.nan, 0)
         st.write(data)
         # Validate option
         if select_report == 'Tendencia de la infección por Covid-19 en un País.':
@@ -1895,7 +1900,7 @@ if upload_file is not None:
 
         st.header("COVID deaths Reports")
         select_report = st.selectbox('Select report', covid_deaths_tuple)
-
+        data.replace(np.nan, 0)
         st.write(data)
         if select_report == 'Análisis del número de muertes por coronavirus en un País.':
             covidDeathsByCountry(data)
@@ -1927,7 +1932,7 @@ if upload_file is not None:
     elif sidebar_selectbox == 'Vaccines':
         st.header('COVID Vaccines Reports')
         select_report = st.selectbox('Select report', covid_vaccines_tuple)
-
+        data.replace(np.nan, 0)
         st.write(data)
         if select_report == 'Tendencia de la vacunación de en un País.':
             vaccinationTendencyByCountry(data)
