@@ -30,6 +30,8 @@ from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import PolynomialFeatures
 from streamlit.elements.arrow import Data
 
+prediccion = 0
+
 
 def generatePredictionGraph(y: DataFrame, grade, days, max_val):
 
@@ -107,6 +109,8 @@ def generatePredictionGraph(y: DataFrame, grade, days, max_val):
     plt.show()
     st.pyplot()
     st.caption('Prediction graph')
+    global prediccion
+    prediccion = Y_NEW[int(Y_NEW.size - 1)][0]
     st.write("La predicción será de ", Y_NEW[int(Y_NEW.size - 1)][0])
 
     #
@@ -129,7 +133,7 @@ def generateTendencyGraph(y, header, maxY):
 
     plt.scatter(X, y, color='black')
     plt.plot(X, y_pred, color='blue', linewidth=3)
-    plt.savefig('D:\\trend.jpg')
+    plt.savefig('trend.jpg')
     #print(reg.predict([[10]]))
     max_val = maxY
 
@@ -279,7 +283,7 @@ def covidInfectionTendence(data: DataFrame):
         st.warning("Please select a field")
 
 
-# 2.  Predicción de Infectados en un País.
+# 2. Predicción de Infectados en un País.
 def covidInfectedPredictionByCountry(data: DataFrame):
 
     has_date = st.checkbox('This file has "date" field')
@@ -352,7 +356,7 @@ def covidInfectedPredictionByCountry(data: DataFrame):
             content = ""
 
             if export_as_pdf:
-                write_pdf(pdf_title, content, 'D:\\prediction.png')
+                write_pdf(pdf_title, content, 'prediction.png')
             pass
 
     except Exception as e:
@@ -411,7 +415,7 @@ def pandemicProgression(data: DataFrame):
         #content = ""
 
         if export_as_pdf:
-            write_pdf(pdf_title, interpretacion, 'D:\\trend.jpg')
+            write_pdf(pdf_title, interpretacion, 'trend.jpg')
 
 
 # 4. Predicción de mortalidad por COVID en un Departamento.
@@ -474,21 +478,21 @@ def covidDeathsPredictionByDeparment(data: DataFrame):
             #content = ""
 
             if export_as_pdf:
-                write_pdf(pdf_title, interpretacion, 'D:\\prediction.png')
+                write_pdf(pdf_title, interpretacion, 'prediction.png')
 
     except Exception as e:
         st.write(e)
         st.warning('Select a field')
 
 
-# 5. Predicción de mortalidad por COVID en un País (ARRRRRREGLAR)
+# 5. Predicción de mortalidad por COVID en un País
 def covidDeathPredictionByCountry(data: DataFrame):
 
     try:
 
         options_selected = st.multiselect(
             'Select fields to filter [country, deaths]: ', data.columns)
-
+        st.write(options_selected)
         if options_selected.__len__() < 2:
             st.warning('Plase select fields to filter')
         else:
@@ -497,8 +501,9 @@ def covidDeathPredictionByCountry(data: DataFrame):
                                    data[options_selected[0]].drop_duplicates())
 
             data = data[data[options_selected[0]].isin([country])]
+            data[options_selected[0]] = data[options_selected[0]].fillna(0)
             has_date = st.checkbox('The file has "date" field')
-            data
+            #data.fillna(0)
 
             if has_date:
 
@@ -513,10 +518,10 @@ def covidDeathPredictionByCountry(data: DataFrame):
                 # st.write(flt)
                 data = data.sort_values(by=date_).reset_index()
 
-                data
+                #data.fillna(0)
 
                 #data[['dateRep', 'deaths']]
-                data[fltr]
+                data[fltr] = data[fltr].fillna(0)
 
                 n_days = st.slider('Select a number of days to predict: ', 100,
                                    1000)
@@ -526,11 +531,17 @@ def covidDeathPredictionByCountry(data: DataFrame):
                 generatePredictionGraph(data[fltr], grade, n_days,
                                         data[fltr].max())
 
-                # export_as_pdf = st.button("Export Report")
-                # pdf_title = '4. Predicción de mortalidad por COVID en un Departamento.'
+                export_as_pdf = st.button("Export Report")
+                pdf_title = '5. Predicción de mortalidad por COVID en un País '
 
-                # if export_as_pdf:
-                #     write_pdf(pdf_title, interpretacion, 'D:\\prediction.png')
+                global prediccion
+                interpretacion = """
+                La prediccion de numero de muertes en globalmente en un numero de {} días representado con un polnomio de  grado {}
+                sera de {} personas, de acuerdo al dataset que se tiene.
+                """.format(n_days, grade, int(prediccion))
+
+                if export_as_pdf:
+                    write_pdf(pdf_title, interpretacion, 'prediction.png')
             else:
                 pass
 
@@ -569,7 +580,7 @@ def covidDeathsByCountry(data: DataFrame):
             st.subheader('Deaths analysis in {}'.format(country))
             st.write(data[[data_options[1], data_options[2]]])
 
-            y = data[data_options[1]]
+            y = data[data_options[1]].fillna(0)
 
             generateTendencyGraph(y, 'Deaths in {}'.format(country), y.max())
             intepretacion = """
@@ -584,7 +595,7 @@ def covidDeathsByCountry(data: DataFrame):
             #content = ""
 
             if export_as_pdf:
-                write_pdf(pdf_title, intepretacion, 'D:\\trend.jpg')
+                write_pdf(pdf_title, intepretacion, 'trend.jpg')
 
     except Exception as e:
         st.write(e)
@@ -631,7 +642,7 @@ def covidInfectedByDay(data: DataFrame):
             st.write(fig)
 
             # x = []
-            y = country_infections[select_col[2]]
+            y = country_infections[select_col[2]].fillna(0)
             hd = "COVID-19 Spread tendency in " + country[0]
             max_val = country_infections[select_col[2]].max()
 
@@ -686,19 +697,22 @@ def casesPredictionOneYear(data: DataFrame):
         st.write(flt[[date_, var]])
 
         grade = st.slider('Select polynomial grade: ', 1, 10)
-        generatePredictionGraph(flt[var], grade, 365, flt[var].max())
+        generatePredictionGraph(flt[var].fillna(0), grade, 365,
+                                flt[var].fillna(0).max())
+        global prediccion
         interpretacion = """
         La gráfica nos indica la predicción de casos que tendrá {} despues de un año del primer contagio por COVID-19, es importante tomar en cuenta
         que es un valor estimado, y que el grado del polinomio usado tambien indica la precisión de los valores obtenidos.
-        """.format(country)
-        st.write()
+        La prediccion de casos para un año a partir del dia del primer caso detectado será de {} casos.
+        """.format(country, int(prediccion))
+        st.info(interpretacion)
 
         export_as_pdf = st.button("Export Report")
         pdf_title = '8. Predicción de casos de un país para un año.'
         #content = ""
 
         if export_as_pdf:
-            write_pdf(pdf_title, interpretacion, 'D:\\prediction.png')
+            write_pdf(pdf_title, interpretacion, 'prediction.png')
 
     else:
 
@@ -748,7 +762,7 @@ def vaccinationTendencyByCountry(data: DataFrame):
 
             st.write(data)
 
-            vac = data[data_options[2]]
+            vac = data[data_options[2]].fillna(0)
 
             st.write(vac)
 
@@ -767,7 +781,7 @@ def vaccinationTendencyByCountry(data: DataFrame):
             #content = ""
 
             if export_as_pdf:
-                write_pdf(pdf_title, interpretacion, 'D:\\trend.jpg')
+                write_pdf(pdf_title, interpretacion, 'trend.jpg')
 
     except Exception as e:
         st.write(e)
@@ -803,7 +817,7 @@ def vaccinationComparationByCountries(data: DataFrame):
                 t1 = p1[variable].sum()
                 generateTendencyGraph(p1[variable],
                                       'Vaccinations in {}'.format(country1),
-                                      p1[variable].max())
+                                      p1[variable].fillna(0).max())
 
             with col2:
 
@@ -816,7 +830,7 @@ def vaccinationComparationByCountries(data: DataFrame):
                 t2 = p2[variable].sum()
                 generateTendencyGraph(p2[variable],
                                       'Vaccinations in {}'.format(country2),
-                                      p2[variable].max())
+                                      p2[variable].fillna(0).max())
 
             ## graph
             plotdata = pd.DataFrame({str(variable): [t1, t2]},
@@ -859,7 +873,7 @@ def vaccinationComparationByCountries(data: DataFrame):
             #content = ""
 
             if export_as_pdf:
-                write_pdf(pdf_title, interpretacion, 'D:\\trend.jpg')
+                write_pdf(pdf_title, interpretacion, 'trend.jpg')
 
             # st.set_option('deprecation.showPyplotGlobalUse', False)
             # plotdata.plot(kind="bar", color="green")
@@ -896,8 +910,8 @@ def menPercentageInfected(data: DataFrame):
             gender2 = gender[1]
 
             #data[[gender1, gender2]]
-            t1 = data[gender1].sum()
-            t2 = data[gender2].sum()
+            t1 = data[gender1].fillna(0).sum()
+            t2 = data[gender2].fillna(0).sum()
 
             data
 
@@ -983,7 +997,7 @@ def covidComparative(data: DataFrame):
                 for i in range(0, countries.__len__()):
                     country = countries[i]
                     temp = data[data[place].isin([country])]
-                    val = temp[variable].sum()
+                    val = temp[variable].fillna(0).sum()
                     elements.append(val)
 
                 #generateTendencyGraph(elements, '--', 1000000)
@@ -1003,7 +1017,7 @@ def covidComparative(data: DataFrame):
                     plt.title(
                         "Comparative between two or more countries or continents"
                     )
-                    plt.savefig("D:\\compcountries.png")
+                    plt.savefig("compcountries.png")
                     st.pyplot()
 
                     interpretacion = """
@@ -1018,7 +1032,7 @@ def covidComparative(data: DataFrame):
 
                     if export_as_pdf:
                         write_pdf(pdf_title, interpretacion,
-                                  'D:\\compcountries.png')
+                                  'compcountries.png')
             else:
                 st.warning('Please, select more countries ')
 
@@ -1073,7 +1087,7 @@ def deathsByCountryRegions(data: DataFrame):
 
             else:
 
-                data = data.groupby(filters[0])[filters[1]].sum()
+                data = data.groupby(filters[0])[filters[1]].sum().fillna(0)
 
                 st.subheader("{} by {} in {}".format(filters[1], filters[0],
                                                      country).capitalize())
@@ -1083,10 +1097,8 @@ def deathsByCountryRegions(data: DataFrame):
                     time.sleep(3)
 
                     data.plot(kind="bar", color="blue")
-                    plt.title(
-                        "Comparative between two or more countries or continents"
-                    )
-                    plt.savefig("D:\\deathsregion.png")
+                    plt.title("Muertes según regiones de un país - Covid 19.")
+                    plt.savefig("deathsregion.png")
                     st.pyplot()
                     data
 
@@ -1101,8 +1113,7 @@ def deathsByCountryRegions(data: DataFrame):
                 export_as_pdf = st.button("Export Report")
                 pdf_title = "14. Muertes según regiones de un país - Covid 19."
                 if export_as_pdf:
-                    write_pdf(pdf_title, interpretacion,
-                              'D:\\deathsregion.png')
+                    write_pdf(pdf_title, interpretacion, 'deathsregion.png')
 
     except Exception as e:
         st.write(e)
@@ -1151,7 +1162,7 @@ def covidCasesByDep(data: DataFrame):
                 data_options[2], country_option).capitalize())
             st.write(dep[[data_options[0], data_options[2]]])
 
-            y = dep[data_options[2]]
+            y = dep[data_options[2]].fillna(0)
             hd = "COVID-19 Spread tendency in " + province
             max_val = dep[data_options[2]].max()
             #st.write(max_val)
@@ -1172,7 +1183,7 @@ def covidCasesByDep(data: DataFrame):
             #content = ""
 
             if export_as_pdf:
-                write_pdf(pdf_title, interpretacion, 'D:\\trend.jpg')
+                write_pdf(pdf_title, interpretacion, 'trend.jpg')
 
     except Exception as e:
         st.write(e)
@@ -1201,8 +1212,8 @@ def percentageDeathsCases(data: DataFrame):
             data = data[data[reg].isin([place])]
 
             # total deaths
-            t1 = data[var1].sum()
-            t2 = data[var2].sum()
+            t1 = data[var1].fillna(0).sum()
+            t2 = data[var2].fillna(0).sum()
             st.write('* total deaths in {}: {}'.format(place, t1).capitalize())
             interpretacion += '* total deaths in {}: {} \n'.format(
                 place, t1).capitalize()
@@ -1222,6 +1233,10 @@ def percentageDeathsCases(data: DataFrame):
             df = DataFrame({'Total': [perc1.__round__(3),
                                       perc2.__round__(3)]},
                            index=[var1, var2])
+
+            interpretacion += """\n\n
+            El porcemtake de {} es del {} %, mientras que el porcentaje de {} es del {} %
+            """.format(var1, perc1.__round__(3), var2, perc2.__round__(3))
 
             st.spinner()
 
@@ -1269,18 +1284,16 @@ def performoranceRateCasesDeaths(data: DataFrame):
                              data.columns)
     st.write(options)
 
-    place = options[0]
-    date_ = options[1]
-    cases = options[2]
-    deaths = options[3]
-
     try:
 
         if options.__len__() < 4:
             st.warning('Please select more fields')
 
         else:
-
+            place = options[0]
+            date_ = options[1]
+            cases = options[2]
+            deaths = options[3]
             continent = st.selectbox('Select continent: ',
                                      data[place].drop_duplicates())
 
@@ -1290,12 +1303,26 @@ def performoranceRateCasesDeaths(data: DataFrame):
             #flt[[date_, cases, deaths]]
 
             flt[[date_, deaths]]
-            #st.line_chart(flt[[date_, deaths]])
-            # st.caption('Cases / Deaths performance during the pandemic. ')
-            # st.info(
-            #     'Esta grafica muestra el comportamiento de las muertes y los casos confirmados a lo largo de la pandemia en {}'
-            #     .format(place))
+            st.line_chart(flt[[cases, deaths]].fillna(0))
+            st.caption('Cases / Deaths performance during the pandemic. ')
+            interpretacion = """
+            Esta grafica muestra el comportamiento de las muertes y los casos confirmados a lo largo de la pandemia en {}.
+            Este comportamiento suele variar dependiendo cada región del mundo estudiada, en los países más poblados como por ejemplo
+            los países que pertenecen a Asia, el numero de muertes y de casos es demasiado grande, que a comparación de otras regiones
+            menos pobladas del mundo.
+            """.format(continent)
 
+            st.info(interpretacion)
+
+            export_as_pdf = st.button("Export Report")
+            pdf_title = '17. Tasa de comportamiento de casos activos en relación al número de muertes en un continente'
+            #content = ""
+
+            if export_as_pdf:
+                write_pdf(
+                    pdf_title, interpretacion,
+                    'https://htmlcolorcodes.com/assets/images/colors/white-color-solid-background-1920x1080.png'
+                )
         pass
     except Exception as e:
 
@@ -1357,31 +1384,44 @@ def classificationInfectedPeopleByState(data: DataFrame):
                 st.spinner()
                 with st.spinner(text="Loading..."):
                     time.sleep(3)
-
+                interpretacion = ''
                 with col1:
                     st.set_option('deprecation.showPyplotGlobalUse', False)
                     generateTendencyGraph(
-                        data[var1],
+                        data[var1].fillna(0),
                         '{} trend graphic in {}'.format(var1, state),
-                        data[var1].max())
+                        data[var1].fillna(0).max())
 
-                    st.info("""
-                    Esta grafica contiene la tendencia que tiene la variable "{}"
+                    interpretacion += """\n\n
+                    Esta grafica contiene la tendencia que tiene la variable "{}" para el municipio de {}
                     con el paso del tiempo, es importante analizar la pendiente que se genera
                     para saber si irá incrementando o decrementanto el valor de la variable estudiada
-                    """.format(var1))
+                    """.format(var1, state)
+                    st.info(interpretacion)
 
                 with col2:
                     st.set_option('deprecation.showPyplotGlobalUse', False)
                     generateTendencyGraph(
-                        data[var2],
+                        data[var2].fillna(0),
                         '{} trend graphic in {}'.format(var2, state),
-                        data[var2].max())
-                    st.info("""
-                    Esta grafica contiene la tendencia que tiene la variable "{}"
+                        data[var2].fillna(0).max())
+
+                    interpretacion += """\n\n
+                    Esta grafica contiene la tendencia que tiene la variable "{}" para el municipio de {}
                     con el paso del tiempo, es importante analizar la pendiente que se genera
                     para saber si irá incrementando o decrementanto el valor de la variable estudiada
-                    """.format(var2))
+                    """.format(var2, state)
+                    st.info(interpretacion)
+
+                export_as_pdf = st.button("Export Report")
+                pdf_title = '18. Comportamiento y clasificación de personas infectadas por COVID-19 por municipio en un País.'
+                #content = ""
+
+                if export_as_pdf:
+                    write_pdf(
+                        pdf_title, interpretacion,
+                        'https://htmlcolorcodes.com/assets/images/colors/white-color-solid-background-1920x1080.png'
+                    )
             else:
                 pass
 
@@ -1423,13 +1463,14 @@ def deathsPredictionOnFirstYear(data: DataFrame):
 
         grade = st.slider('Select a polynomical grade: ', 1, 5)
 
-        generatePredictionGraph(include[fld], grade, n_days.days,
-                                include[fld].max())
+        generatePredictionGraph(include[fld].fillna(0), grade, n_days.days,
+                                include[fld].fillna(0).max())
 
+        global prediccion
         interpretacion = """
         Esta grafica muestra la predicción del numero de muertes para el ultimo dia del primer año de contagios en {},
-        con una grafica polinomial de grado {} 
-        """.format(country, grade)
+        con una grafica polinomial de grado {}, y la predicción de muertes para el ultimo dia del primer año de contagios será de {}.
+        """.format(country, grade, int(prediccion))
 
         st.info(interpretacion)
 
@@ -1438,7 +1479,7 @@ def deathsPredictionOnFirstYear(data: DataFrame):
         #content = ""
 
         if export_as_pdf:
-            write_pdf(pdf_title, interpretacion, 'D:\\prediction.png')
+            write_pdf(pdf_title, interpretacion, 'prediction.png')
 
         #st.write(data.loc[data.index.min()-1])
         # st.write(include.index.min())
@@ -1491,7 +1532,7 @@ def deathGlobalPrediction(data: DataFrame):
     try:
 
         date_ = st.selectbox('Select date field ', data.columns)
-        field = st.selectbox('Select option', data.columns)
+        field = st.selectbox('Select variable to study', data.columns)
 
         n_days = st.slider('Select number of days to predict ', 1, 1000)
         grade = st.slider('Select polynomial grade: ', 1, 10)
@@ -1500,17 +1541,23 @@ def deathGlobalPrediction(data: DataFrame):
         data = data.sort_values(by=date_)
         st.write(data)
 
-        generatePredictionGraph(data[field], grade, n_days, data[field].max())
+        generatePredictionGraph(data[field].fillna(0), grade, n_days,
+                                data[field].fillna(0).max())
 
-        export_as_pdf = st.button("Export Report")
-        pdf_title = '21. Predicciones de casos y muertes en todo el mundo '
         #content = ""
+        global prediccion
         interpretacion = """
         La gráfica muestra la predicción de casos asi como tambien la predicción de muertes en el mundo, por causa de la 
         pandemia del COVID-19, representado con un polionomio {} y a un plazo de {} días.
-        """.format(grade, n_days)
+        La predicicón de {} en todo el mundo será de {} personas. 
+        """.format(grade, n_days, field, int(prediccion))
+
+        st.info(interpretacion)
+
+        export_as_pdf = st.button("Export Report")
+        pdf_title = '21. Predicciones de casos y muertes en todo el mundo '
         if export_as_pdf:
-            write_pdf(pdf_title, interpretacion, 'D:\\prediction.png')
+            write_pdf(pdf_title, interpretacion, 'prediction.png')
 
         pass
     except Exception as e:
@@ -1537,7 +1584,7 @@ def deathsRateByCountry(data: DataFrame):
 
         data = data[data[option].isin([country])]
 
-        flt = data[[deaths, positives]].reset_index()
+        flt = data[[deaths, positives]].fillna(0).reset_index()
 
         st.subheader("Deaths / Positive people in {} ".format(country))
         st.write(flt)
@@ -1559,14 +1606,14 @@ def deathsRateByCountry(data: DataFrame):
         #xd = pd.DataFrame(deathrate)
         #st.head
         generateTendencyGraph(deathrate, "Death rate by country", 20)
-
-        st.info("""
+        interpretacion = """
         La grafica de arriba representa el porcentaje de personas fallecidas que hay por el numero de personas 
         que contraen COVID-19 en {}, una pendiente decreeciente indica que la tasa de mortalidad tiende a bajar con el paso del tiempo
         , pero una pendiente positiva indica que la tasa de moratalidad tiene una tendencia a ser más alta en el futuro. Lo cual son
         datos muy importantes para las autoridades, quienes tienen que tomar acciones para evitar 
         que la tasa de mortalidad suba.
-        """.format(country))
+        """.format(country)
+        st.info(interpretacion)
 
         st.write('--' * 100)
 
@@ -1579,8 +1626,10 @@ def deathsRateByCountry(data: DataFrame):
         #de(xd, 3, 20, 1000)
 
         #st.write(deathrate)
-
-        pass
+        export_as_pdf = st.button("Export Report")
+        pdf_title = '# 22. Tasa de mortalidad por coronavirus (COVID-19) en un país. '
+        if export_as_pdf:
+            write_pdf(pdf_title, interpretacion, 'trend.jpg')
 
     pass
 
@@ -1611,7 +1660,7 @@ def covidDeathFactors(data: DataFrame):
             for i in range(0, select_factors.__len__()):
 
                 factor = select_factors[i]
-                val = data[factor].sum()
+                val = data[factor].fillna(0).sum()
                 elements.append(val)
                 #tot_sum
 
@@ -1626,7 +1675,7 @@ def covidDeathFactors(data: DataFrame):
                 st.set_option('deprecation.showPyplotGlobalUse', False)
                 plotdata.plot(kind="bar", color="blue")
                 plt.title("Death factors by COUNTRY")
-                plt.savefig("D:\\deathfactors.png")
+                plt.savefig("deathfactors.png")
                 st.pyplot()
 
                 interpretacion = """
@@ -1641,8 +1690,7 @@ def covidDeathFactors(data: DataFrame):
                 #content = ""
 
                 if export_as_pdf:
-                    write_pdf(pdf_title, interpretacion,
-                              'D:\\deathfactors.png')
+                    write_pdf(pdf_title, interpretacion, 'deathfactors.png')
 
     except Exception as e:
         st.write(e)
@@ -1680,7 +1728,7 @@ def covidCasesTestComparation(data: DataFrame):
             plotdata.plot(kind="bar", color="blue")
             plt.title(
                 "Comparación entre el numero de casos y numero de pruebas")
-            plt.savefig("D:\\compcasestests.png")
+            plt.savefig("compcasestests.png")
             st.pyplot()
             #st.bar_chart(plotdata)
 
@@ -1689,7 +1737,10 @@ def covidCasesTestComparation(data: DataFrame):
             #content = ""
 
             if export_as_pdf:
-                write_pdf(pdf_title, " ", 'D:\\compcasestests.png')
+                write_pdf(
+                    pdf_title,
+                    "La grafica representa la comparacion entre {}  y {} lo cual es muy util para saber la respuesta de las personas hacia los casos, es decir si hay muchas personas que se hicieron las pruebas por la cantidad de casos detectados.  "
+                    .format(var1, var2), 'compcasestests.png')
 
     except Exception as e:
 
@@ -1728,12 +1779,14 @@ def covidCasesPredictionByDay(data: DataFrame):
             st.spinner()
             with st.spinner(text="Generating prediction..."):
                 time.sleep(3)
-                generatePredictionGraph(data, grade, n_days, data.max())
+                generatePredictionGraph(data.fillna(0), grade, n_days, data.fillna(0).max())
 
+            global prediccion
             prediccion = """
             La predicción realizada para un periodo de {} días con un polinomio de grado {} brindará un valor proximado en cuanto al numero de "{}".
             Un polomio de grado mayor nos brinda mayor precision que una grafica lineal.
-            """.format(n_days, grade, flter)
+            La predicción de casos confirmados por día es de {} casos para la cantidad de dias seleccionada.
+            """.format(n_days, grade, flter, int(prediccion))
 
             st.info(prediccion)
 
@@ -1742,7 +1795,7 @@ def covidCasesPredictionByDay(data: DataFrame):
             #content = ""
 
             if export_as_pdf:
-                write_pdf(pdf_title, prediccion, 'D:\\prediction.png')
+                write_pdf(pdf_title, prediccion, 'prediction.png')
 
     except Exception as e:
 
@@ -1828,10 +1881,7 @@ if upload_file is not None:
     elif select_extension == 'csv':
         data = pd.read_csv(upload_file)
     elif select_extension == 'xlsx':
-        #wb = openpyxl.load_workbook(upload_file)
-        #data = pd.DataFrame(wb)
         data = pd.read_excel(upload_file, sheet_name=0)
-        #data = pd.read_excel(upload_file.name, engine='openpyxl')
 
     # Validate area of analysis
     if sidebar_selectbox == 'COVID Cases':
