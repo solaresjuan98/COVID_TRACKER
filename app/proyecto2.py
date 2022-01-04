@@ -1432,7 +1432,7 @@ def deathsPredictionOnFirstYear(data: DataFrame):
         st.info(interpretacion)
 
         export_as_pdf = st.button("Export Report")
-        pdf_title = '4. Predicción de mortalidad por COVID en un Departamento.'
+        pdf_title = '19. Predicción de muertes en el último día del primer año de infecciones en un país.'
         #content = ""
 
         if export_as_pdf:
@@ -1483,7 +1483,39 @@ def growthRateCasesAndDeathRate(data: DataFrame):
         st.warning('Error :(')
 
 
-# 21. Predicciones de casos y muertes en todo el mundo - Neural Network MLPRegressor
+# 21. Predicciones de casos y muertes en todo el mundo
+def deathGlobalPrediction(data: DataFrame):
+
+    try:
+
+        date_ = st.selectbox('Select date field ', data.columns)
+        field = st.selectbox('Select option', data.columns)
+
+        n_days = st.slider('Select number of days to predict ', 1, 1000)
+        grade = st.slider('Select polynomial grade: ', 1, 10)
+
+
+        data[date_] = pd.to_datetime(data[date_])
+        data = data.sort_values(by=date_)
+        st.write(data)
+        
+        generatePredictionGraph(data[field], grade, n_days, data[field].max())
+        
+        export_as_pdf = st.button("Export Report")
+        pdf_title = '21. Predicciones de casos y muertes en todo el mundo '
+        #content = ""
+        interpretacion = """
+        La gráfica muestra la predicción de casos asi como tambien la predicción de muertes en el mundo, por causa de la 
+        pandemia del COVID-19, representado con un polionomio {} y a un plazo de {} días.
+        """.format(grade, n_days)
+        if export_as_pdf:
+            write_pdf(pdf_title, interpretacion, 'D:\\prediction.png')
+        
+
+        pass
+    except Exception as e:
+        st.write(e)
+        st.warning('Error :c')
 
 
 # 22. Tasa de mortalidad por coronavirus (COVID-19) en un país. ***
@@ -1671,8 +1703,8 @@ covid_deaths_tuple = (
     'Porcentaje de muertes frente al total de casos en un país, región o continente',
     'Tasa de mortalidad por coronavirus (COVID-19) en un país.',
     'Muertes según regiones de un país - Covid 19.',
-    'Predicción de muertes en el último día del primer año de infecciones en un país.'
-)
+    'Predicción de muertes en el último día del primer año de infecciones en un país.',
+    'Predicciones de casos y muertes en todo el mundo')
 # Covid Cases
 covid_cases_tuple = (
     'Tendencia de la infección por Covid-19 en un País.',
@@ -1815,6 +1847,9 @@ if upload_file is not None:
 
         elif select_report == 'Predicción de muertes en el último día del primer año de infecciones en un país.':
             deathsPredictionOnFirstYear(data)
+
+        elif select_report == 'Predicciones de casos y muertes en todo el mundo':
+            deathGlobalPrediction(data)
 
     elif sidebar_selectbox == 'Vaccines':
         st.header('COVID Vaccines Reports')
