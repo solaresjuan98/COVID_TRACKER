@@ -19,8 +19,6 @@ CARNET 201800496
 
 :green_book:[Reportes](#tag3)
 
-
-
 ## Descripción del problema
 
 La pandemia del COVID-19 sin duda alguna ha causado un cambio significativo en la vida de todas las personas **alrededor** del mundo debido a los cambios drásticos que vinieron junto a está pandemia.
@@ -33,6 +31,8 @@ A lo largo del tiempo, gracias a los avances tecnologicos se ha podido recabar u
 ## Solución
 La solución propuesta es realizar una aplicacíón web en la cual se puedan analizar datos estadisticos de la pandemia a lo largo del tiempo, utilizando Ciencia de Datos. La Ciancia de Datos es una campo interdisciplinario que incolucra metodos cientificos, procesos y sistemas para poder extraer datos y conocimientos para poder tomar decisiones.
 
+![1](./img/holaaa.jpg)
+
 ## Breve descripción de la aplicación
 La aplicación consiste en un analizador de archivos .CSV, JSON y XLS los cuales contienen datos recopilados de distintas fuetes, y la aplicación tiene la capacidad (por medio de SciKit learn) de generar graficas de tendencia así como generar predicciones y gráficas de tendencia. 
 
@@ -42,11 +42,46 @@ La aplicación consiste en un analizador de archivos .CSV, JSON y XLS los cuales
 ### REGRESIÓN LINEAL: 
 La regresión lineal es una técnica de modelado estadístico que se emplea para describir una variable de respuesta continua como una función de una o varias variables predictoras. Puede ayudar a comprender y predecir el comportamiento de sistemas complejos o a analizar datos experimentales, financieros y biológicos.
 
+![1](./img/regr.png)
+
 ## Flujo de la aplicación
 
 
 
-## Generar tendencia 
+## Importar las librerias usadas
+```python
+import base64
+import datetime as dt
+import io
+import time
+from math import e
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from pandas.core.indexes.timedeltas import timedelta_range
+import plotly
+import plotly.express as px
+import plotly.figure_factory as ff
+import seaborn as sns
+import streamlit as st
+from attr import field
+from fpdf import FPDF
+from matplotlib import colors
+from pandas._config.config import options
+from pandas.core import groupby
+from pandas.core.algorithms import mode
+from pandas.core.frame import DataFrame
+from pandas.core.reshape.pivot import pivot_table
+from PIL import Image
+from sklearn import linear_model
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.preprocessing import PolynomialFeatures
+from streamlit.elements.arrow import Data
+```
+
+## GENERAR TENDENCIA 
 
 
 ## Generar predicciones en Python
@@ -187,3 +222,6 @@ def generateTendencyGraph(y, header, maxY):
 | 23. Factores de muerte por COVID-19 en un país. | def covidCasesTestComparation(data: DataFrame) |
 | 24. Comparación entre el número de casos detectados y el número de pruebas de un país. | Text |
 | 25. Predicción de casos confirmados por día | covidCasesPredictionByDay(data: DataFrame) | 
+
+
+
