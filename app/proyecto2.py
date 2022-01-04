@@ -264,7 +264,7 @@ def covidInfectionTendence(data: DataFrame):
                     export_as_pdf = st.button("Export Report")
 
                     if export_as_pdf:
-                        write_pdf(pdf_title, content, 'D:\\trend.jpg')
+                        write_pdf(pdf_title, content, 'trend.jpg')
 
             else:
                 variable = st.selectbox('Select variable to analyze: ',
