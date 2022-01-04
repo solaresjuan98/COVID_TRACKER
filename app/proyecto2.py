@@ -1635,7 +1635,7 @@ def covidDeathFactors(data: DataFrame):
                 interpretacion = """
                 Esta grafica representa la COMPARACIÓN de las causas de muerte de las personas con COVID-19, lo cual es un indicador
                 para saber como tiene que estar el estado de salud de las personas de acuerdo a su edad, por lo regular las personas
-                con sobrepeso y diabeticas son las que tienen a recibir de peor forma el corona vidu
+                con sobrepeso y diabeticas son las que tienen a recibir de peor forma el coronavirus
                 """
                 st.info(interpretacion)
 
