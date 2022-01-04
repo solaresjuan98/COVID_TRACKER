@@ -17,13 +17,12 @@ CARNET 201800496
 
 :green_book:[Solucion](#tag2)
 
-:green_book:[Flujo de la aplicación](#tag2)
+:green_book:[Flujo de la aplicación](#tag3)
 
-:green_book:[Generar predicciones en Python](#tag3)
+:green_book:[Generar predicciones en Python](#tag4)
 
-:green_book:[Generar tendencias en Python](#tag4)
+:green_book:[Generar tendencias en Python](#tag5)
 
-## Descripción del problema
 ## :beginner: Descripción del problema<a name="tag1"></a>
 La pandemia del COVID-19 sin duda alguna ha causado un cambio significativo en la vida de todas las personas **alrededor** del mundo debido a los cambios drásticos que vinieron junto a está pandemia.
 
@@ -32,8 +31,7 @@ Debido a esto, desde el año 2020, han ocurrido muchos sucesos relacionados a la
 A lo largo del tiempo, gracias a los avances tecnologicos se ha podido recabar una gran cantidad de datos y estadisticas  los cuales son muy necesarios para poder tomar decisiones para poder contener el avance de la pandemia y poder responder de la mejor forma para evitar muchos contagios.
 
 
-## Solucion
-## :beginner: Solucion <a name="tag1"></a>
+## :beginner: Solucion<a name="tag2"></a>
 La solución propuesta es realizar una aplicacíón web en la cual se puedan analizar datos estadisticos de la pandemia a lo largo del tiempo, utilizando Ciencia de Datos. La Ciancia de Datos es una campo interdisciplinario que incolucra metodos cientificos, procesos y sistemas para poder extraer datos y conocimientos para poder tomar decisiones.
 
 ![1](./img/holaaaa.jpg)
@@ -49,8 +47,7 @@ La regresión lineal es una técnica de modelado estadístico que se emplea para
 
 ![1](./img/regr.png)
 
-## Flujo de la aplicación
-## :beginner: Flujo de la aplicación<a name="tag1"></a>
+## :beginner: Flujo de la aplicación<a name="tag3"></a>
 El flujo de funcionamiento de la aplicación es el siguiente: 
 
 1. Se carga el archivo de entrada en cualquier formato.
@@ -114,7 +111,7 @@ from streamlit.elements.arrow import Data
 ```
 
 ## Generar predicciones en Python
-## :beginner: Generar predicciones en Python<a name="tag1"></a>
+## :beginner: Generar predicciones en Python<a name="tag4"></a>
 ```python
 
 def generatePredictionGraph(y: DataFrame, grade, days, max_val):
@@ -191,7 +188,7 @@ def generatePredictionGraph(y: DataFrame, grade, days, max_val):
 ```
 
 ## Generar tendencias en Python
-## :beginner: Generar tendencias en Python<a name="tag1"></a>
+## :beginner: Generar tendencias en Python<a name="tag5"></a>
 ```python
 
 
