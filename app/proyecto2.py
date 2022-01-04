@@ -7,6 +7,7 @@ from math import e
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from pandas.core.indexes.timedeltas import timedelta_range
 import plotly
 import plotly.express as px
 import plotly.figure_factory as ff
@@ -1392,6 +1393,60 @@ def classificationInfectedPeopleByState(data: DataFrame):
 
 
 # 19. Predicción de muertes en el último día del primer año de infecciones en un país.
+def deathsPredictionOnFirstYear(data: DataFrame):
+
+    option = st.selectbox("Select a field to filter [country]: ", data.columns)
+
+    country = st.selectbox("Select country", data[option].drop_duplicates())
+
+    data = data[data[option].isin([country])]
+
+    year = st.selectbox("Select year: ", [2020, 2021])
+
+    date_ = st.selectbox("Select field to filter [date]: ", data.columns)
+
+    fld = st.selectbox("Select field to analyze []: ", data.columns)
+
+    data[date_] = pd.to_datetime(data[date_])
+    data = data.sort_values(by=date_)
+    include = data[data[date_].dt.year == year]
+    include
+
+    n_days = include[date_].max() - include[date_].min()
+
+    st.write(n_days.days)
+    st.write(type(n_days))
+    #st.write((n_days / np.timedelta64(1, 'D')).astype(int))
+    try:
+
+        grade = st.slider('Select a polynomical grade: ', 1, 5)
+
+        generatePredictionGraph(include[fld], grade, n_days.days,
+                                include[fld].max())
+
+        interpretacion = """
+        Esta grafica muestra la predicción del numero de muertes para el ultimo dia del primer año de contagios en {},
+        con una grafica polinomial de grado {} 
+        """.format(country, grade)
+
+        st.info(interpretacion)
+
+        export_as_pdf = st.button("Export Report")
+        pdf_title = '4. Predicción de mortalidad por COVID en un Departamento.'
+        #content = ""
+
+        if export_as_pdf:
+            write_pdf(pdf_title, interpretacion, 'D:\\prediction.png')
+
+        #st.write(data.loc[data.index.min()-1])
+        # st.write(include.index.min())
+
+        pass
+    except Exception as e:
+        st.write(e)
+        st.warning('Error :c ')
+
+    pass
 
 
 # 20. Tasa de crecimiento de casos de COVID-19 en relación con nuevos casos diarios y tasa de muerte por COVID-19 **
@@ -1615,7 +1670,9 @@ covid_deaths_tuple = (
     'Predicción de mortalidad por COVID en un País',
     'Porcentaje de muertes frente al total de casos en un país, región o continente',
     'Tasa de mortalidad por coronavirus (COVID-19) en un país.',
-    'Muertes según regiones de un país - Covid 19.')
+    'Muertes según regiones de un país - Covid 19.',
+    'Predicción de muertes en el último día del primer año de infecciones en un país.'
+)
 # Covid Cases
 covid_cases_tuple = (
     'Tendencia de la infección por Covid-19 en un País.',
@@ -1755,6 +1812,9 @@ if upload_file is not None:
 
         elif select_report == 'Muertes según regiones de un país - Covid 19.':
             deathsByCountryRegions(data)
+
+        elif select_report == 'Predicción de muertes en el último día del primer año de infecciones en un país.':
+            deathsPredictionOnFirstYear(data)
 
     elif sidebar_selectbox == 'Vaccines':
         st.header('COVID Vaccines Reports')
