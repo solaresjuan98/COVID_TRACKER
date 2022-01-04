@@ -7,7 +7,7 @@ from math import e
 
 import matplotlib.pyplot as plt
 import numpy as np
-#import openpyxl
+import openpyxl
 import pandas as pd
 import plotly
 import plotly.express as px
@@ -1828,7 +1828,9 @@ if upload_file is not None:
     elif select_extension == 'csv':
         data = pd.read_csv(upload_file)
     elif select_extension == 'xlsx':
-        data = pd.read_excel(upload_file)
+        #wb = openpyxl.load_workbook(upload_file)
+        #data = pd.DataFrame(wb)
+        data = pd.read_excel(upload_file, sheet_name=0)
         #data = pd.read_excel(upload_file.name, engine='openpyxl')
 
     # Validate area of analysis
