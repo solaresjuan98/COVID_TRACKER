@@ -31,7 +31,7 @@ A lo largo del tiempo, gracias a los avances tecnologicos se ha podido recabar u
 ## Solución
 La solución propuesta es realizar una aplicacíón web en la cual se puedan analizar datos estadisticos de la pandemia a lo largo del tiempo, utilizando Ciencia de Datos. La Ciancia de Datos es una campo interdisciplinario que incolucra metodos cientificos, procesos y sistemas para poder extraer datos y conocimientos para poder tomar decisiones.
 
-![1](./img/holaaa.jpg)
+![1](./img/holaaaa.jpg)
 
 ## Breve descripción de la aplicación
 La aplicación consiste en un analizador de archivos .CSV, JSON y XLS los cuales contienen datos recopilados de distintas fuetes, y la aplicación tiene la capacidad (por medio de SciKit learn) de generar graficas de tendencia así como generar predicciones y gráficas de tendencia. 
