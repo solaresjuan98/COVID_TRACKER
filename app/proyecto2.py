@@ -1,13 +1,14 @@
 import base64
 import datetime as dt
 import io
+from posixpath import abspath
 import time
 from math import e
 
 import matplotlib.pyplot as plt
 import numpy as np
+#import openpyxl
 import pandas as pd
-from pandas.core.indexes.timedeltas import timedelta_range
 import plotly
 import plotly.express as px
 import plotly.figure_factory as ff
@@ -20,6 +21,7 @@ from pandas._config.config import options
 from pandas.core import groupby
 from pandas.core.algorithms import mode
 from pandas.core.frame import DataFrame
+from pandas.core.indexes.timedeltas import timedelta_range
 from pandas.core.reshape.pivot import pivot_table
 from PIL import Image
 from sklearn import linear_model
@@ -1598,7 +1600,6 @@ def covidDeathFactors(data: DataFrame):
 
         select_factors = st.multiselect('Select death factors ', data.columns)
 
-
         if select_factors == 0:
             st.write('Please choose more fields')
 
@@ -1608,27 +1609,23 @@ def covidDeathFactors(data: DataFrame):
             elements = []
 
             for i in range(0, select_factors.__len__()):
-                
+
                 factor = select_factors[i]
                 val = data[factor].sum()
                 elements.append(val)
-                #tot_sum 
-
+                #tot_sum
 
             plotdata = pd.DataFrame({
                 'Deaths': elements,
             },
-                index=[select_factors]
-            )
+                                    index=[select_factors])
 
             st.spinner()
             with st.spinner(text="loading..."):
                 time.sleep(3)
                 st.set_option('deprecation.showPyplotGlobalUse', False)
                 plotdata.plot(kind="bar", color="blue")
-                plt.title(
-                    "Death factors by COUNTRY"
-                )
+                plt.title("Death factors by COUNTRY")
                 plt.savefig("D:\\deathfactors.png")
                 st.pyplot()
 
@@ -1644,8 +1641,8 @@ def covidDeathFactors(data: DataFrame):
                 #content = ""
 
                 if export_as_pdf:
-                        write_pdf(pdf_title, interpretacion,
-                                  'D:\\deathfactors.png')
+                    write_pdf(pdf_title, interpretacion,
+                              'D:\\deathfactors.png')
 
     except Exception as e:
         st.write(e)
@@ -1804,8 +1801,9 @@ st.sidebar.header("Load a file: ")
 # add selectbox to the sidebar
 sidebar_selectbox = st.sidebar.selectbox('Select Type...', sid_opt_tuple)
 
-# select type of file 
-select_report = st.sidebar.selectbox('Select a tye of file', ('json', 'csv', 'xlsx'))
+# select type of file
+select_extension = st.sidebar.selectbox('Select a tye of file',
+                                        ('json', 'csv', 'xlsx'))
 
 # file uploader
 upload_file = st.sidebar.file_uploader("Choose a .csv, .xls or .json file")
@@ -1823,17 +1821,31 @@ image2 = st.image(
 
 if upload_file is not None:
 
-    st.write(select_report)
+    st.write(select_extension)
+    st.write(upload_file)
+    if select_extension == 'json':
+        data = pd.read_json(upload_file)
+    elif select_extension == 'csv':
+        data = pd.read_csv(upload_file)
+    elif select_extension == 'xlsx':
+        data = pd.read_excel(upload_file)
+        #data = pd.read_excel(upload_file.name, engine='openpyxl')
 
-    data = pd.read_csv(upload_file)
-    
     # Validate area of analysis
     if sidebar_selectbox == 'COVID Cases':
         st.header('COVID Spread/Cases Reports ')
 
         select_report = st.selectbox('Select report', covid_cases_tuple)
         data.replace(np.nan, 0)
-        st.write(data)
+
+        if select_extension == 'json':
+            st.write(data.head().to_string())
+        elif select_extension == 'csv':
+            data
+        elif select_extension == 'xlsx':
+            st.write(data.head().to_string())
+            pass
+
         # Validate option
         if select_report == 'Tendencia de la infección por Covid-19 en un País.':
             covidInfectionTendence(data)
