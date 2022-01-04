@@ -1584,6 +1584,72 @@ def deathsRateByCountry(data: DataFrame):
 
 
 # 23. Factores de muerte por COVID-19 en un país.
+def covidDeathFactors(data: DataFrame):
+
+    try:
+
+        select_option = st.selectbox('Select field to filter [country]: ',
+                                     data.columns)
+
+        country = st.selectbox('Select country:',
+                               data[select_option].drop_duplicates())
+
+        data = data[data[select_option].isin([country])]
+
+        select_factors = st.multiselect('Select death factors ', data.columns)
+
+
+        if select_factors == 0:
+            st.write('Please choose more fields')
+
+        else:
+            st.write(select_factors)
+
+            elements = []
+
+            for i in range(0, select_factors.__len__()):
+                
+                factor = select_factors[i]
+                val = data[factor].sum()
+                elements.append(val)
+                #tot_sum 
+
+
+            plotdata = pd.DataFrame({
+                'Deaths': elements,
+            },
+                index=[select_factors]
+            )
+
+            st.spinner()
+            with st.spinner(text="loading..."):
+                time.sleep(3)
+                st.set_option('deprecation.showPyplotGlobalUse', False)
+                plotdata.plot(kind="bar", color="blue")
+                plt.title(
+                    "Death factors by COUNTRY"
+                )
+                plt.savefig("D:\\deathfactors.png")
+                st.pyplot()
+
+                interpretacion = """
+                Esta grafica representa la COMPARACIÓN de las causas de muerte de las personas con COVID-19, lo cual es un indicador
+                para saber como tiene que estar el estado de salud de las personas de acuerdo a su edad, por lo regular las personas
+                con sobrepeso y diabeticas son las que tienen a recibir de peor forma el corona vidu
+                """
+                st.info(interpretacion)
+
+                export_as_pdf = st.button("Export Report")
+                pdf_title = '23. Factores de muerte por COVID-19 en un país.'
+                #content = ""
+
+                if export_as_pdf:
+                        write_pdf(pdf_title, interpretacion,
+                                  'D:\\deathfactors.png')
+
+    except Exception as e:
+        st.write(e)
+        st.warning('Error :c')
 
 
 # 24. Comparación entre el número de casos detectados y el número de pruebas de un país.
@@ -1702,7 +1768,8 @@ covid_deaths_tuple = (
     'Tasa de mortalidad por coronavirus (COVID-19) en un país.',
     'Muertes según regiones de un país - Covid 19.',
     'Predicción de muertes en el último día del primer año de infecciones en un país.',
-    'Predicciones de casos y muertes en todo el mundo')
+    'Predicciones de casos y muertes en todo el mundo',
+    'Factores de muerte por COVID-19 en un país')
 # Covid Cases
 covid_cases_tuple = (
     'Tendencia de la infección por Covid-19 en un País.',
@@ -1853,6 +1920,9 @@ if upload_file is not None:
 
         elif select_report == 'Predicciones de casos y muertes en todo el mundo':
             deathGlobalPrediction(data)
+
+        elif select_report == 'Factores de muerte por COVID-19 en un país':
+            covidDeathFactors(data)
 
     elif sidebar_selectbox == 'Vaccines':
         st.header('COVID Vaccines Reports')
